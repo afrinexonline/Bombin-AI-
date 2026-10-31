@@ -10,7 +10,7 @@ import { DollarSign, TrendingUp, Users, MessageSquare } from "lucide-react";
 export const revenueStats = [
   {
     label: "Revenue Influenced",
-    value: "$127,840",
+    value: "₦15,770,460",
     change: "+31.2%",
     icon: DollarSign,
     trend: [42, 55, 48, 62, 71, 68, 85, 92, 88, 105, 112, 128],

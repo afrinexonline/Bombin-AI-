@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Clock, Sun, Moon, Check } from "lucide-react";
+import { MessageCircle, Sun, Moon, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "./ThemeProvider";
 import WhatsAppModal from "./WhatsAppModal";
@@ -8,7 +8,6 @@ import Image from "next/image";
 import { useOnboarding } from "../context/OnboardingContext";
 
 export default function TopBar() {
-  const [timeLeft, setTimeLeft] = useState(67321); // seconds (~18:42:01)
   const [showModal, setShowModal] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -19,14 +18,6 @@ export default function TopBar() {
   useEffect(() => {
     setIsConnected(data.whatsappConnected);
   }, [data.whatsappConnected]);
-
-  // Countdown timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Cleanup auto-connect timeout on unmount
   useEffect(() => {
@@ -45,31 +36,26 @@ export default function TopBar() {
     }, 4000);
   };
 
-  const hours = Math.floor(timeLeft / 3600);
-  const minutes = Math.floor((timeLeft % 3600) / 60);
-  const seconds = timeLeft % 60;
-  const formatted = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-
   return (
     <>
-      <header className="flex items-center justify-between px-4 sm:px-6 py-4 lg:pl-[96px]">
+      <header className="flex items-center justify-between flex-wrap gap-2 px-4 sm:px-8 py-3 lg:pl-[96px]">
         {/* Left — Title & Logo */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4">
           <Image
             src="/bombinai-logo.png"
             alt="BOMBIN AI Logo"
             width={44}
             height={44}
-            className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
+            className="h-8 sm:h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
             style={{ background: 'transparent', mixBlendMode: 'plus-lighter' }}
             quality={100}
             priority
           />
           <div>
-            <h1 className="text-lg font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
+            <h1 className="text-base sm:text-lg font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
               Dashboard
             </h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+            <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
               Welcome back — your AI is warmed up
             </p>
           </div>
@@ -80,7 +66,7 @@ export default function TopBar() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="theme-toggle"
+            className="theme-toggle pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer"
             id="theme-toggle"
             aria-label="Toggle theme"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
@@ -94,29 +80,19 @@ export default function TopBar() {
             </div>
           </button>
 
-          {/* Trial Status Pill */}
-          <div className="glass-pill px-3 sm:px-4 py-2 flex items-center gap-2 text-sm" id="trial-status">
-            <Clock className="w-3.5 h-3.5 text-cyan" />
-            <span className="text-xs hidden sm:inline" style={{ color: "var(--text-muted)" }}>Trial</span>
-            <span className="font-mono text-sm font-medium glow-text-sm">
-              {formatted}
-            </span>
-            <span className="text-xs hidden sm:inline" style={{ color: "var(--text-dimmed)" }}>remaining</span>
-          </div>
-
           {/* Connect WhatsApp Button / Connected Badge */}
           {isConnected ? (
             <div
-              className="connected-badge px-4 py-2.5 flex items-center gap-2 text-sm"
+              className="connected-badge pointer-events-auto relative z-30 touch-action-manipulation px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
               id="connect-whatsapp"
             >
-              <Check className="w-4 h-4" />
+              <Check className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               <span>✓ Connected</span>
             </div>
           ) : (
             <button
               onClick={handleConnectClick}
-              className="flex items-center gap-2 text-sm whitespace-nowrap px-4 sm:px-5 py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02]"
               id="connect-whatsapp"
               style={{
                 background: "rgba(37, 211, 102, 0.85)",
@@ -128,7 +104,7 @@ export default function TopBar() {
                 boxShadow: "0 0 20px rgba(37, 211, 102, 0.2), 0 0 40px rgba(37, 211, 102, 0.1)",
               }}
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               <span>Connect WhatsApp</span>
             </button>
           )}

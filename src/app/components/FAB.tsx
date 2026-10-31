@@ -87,8 +87,9 @@ export default function FAB() {
   return (
     <div className="lg:hidden">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fab"
+        className="fab pointer-events-auto relative z-30 cursor-pointer touch-action-manipulation"
         id="fab-assistant"
         aria-label="AI Assistant"
       >
@@ -130,7 +131,7 @@ export default function FAB() {
                 <button
                   key={m}
                   onClick={() => { setMode(m); reset(); }}
-                  className={`mode-tab flex-1 text-center ${mode === m ? "active" : ""}`}
+                  className={`mode-tab flex-1 text-center pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${mode === m ? "active" : ""}`}
                 >
                   {modeConfig[m].label} {modeConfig[m].fullLabel}
                 </button>
@@ -172,7 +173,7 @@ export default function FAB() {
                         <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{msg.content}</p>
                         <button
                           onClick={() => handleCopy(i, msg.content)}
-                          className="mt-2 glass-pill px-2 py-1 flex items-center gap-1 text-[10px]"
+                          className="mt-2 glass-pill px-2 py-1 flex items-center gap-1 text-[10px] pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer"
                           style={{ color: "var(--text-muted)" }}
                         >
                           {copied === i ? <><Check className="w-2.5 h-2.5 text-success" /> Copied</> : <><Copy className="w-2.5 h-2.5" /> Copy</>}
@@ -199,7 +200,7 @@ export default function FAB() {
               {mode === "screenshot" && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                   style={{ background: "var(--bg-pill)", border: "1px solid var(--border-card)" }}
                 >
                   <Camera className="w-3.5 h-3.5 text-cyan" />
@@ -216,7 +217,7 @@ export default function FAB() {
               <button
                 onClick={handleSend}
                 disabled={!textInput.trim() || isGenerating}
-                className="btn-gradient w-8 h-8 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30"
+                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30"
               >
                 <Send className="w-3.5 h-3.5 text-white" />
               </button>

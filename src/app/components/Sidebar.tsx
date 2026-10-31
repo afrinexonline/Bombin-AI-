@@ -39,7 +39,7 @@ export default function Sidebar() {
       {/* Logo */}
       <Link
         href={pathname === "/demo-dashboard" ? "/demo-dashboard" : "/dashboard"}
-        className="mb-6 flex items-center justify-center w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 backdrop-blur-md hover:bg-white/[0.1] hover:scale-105 transition-all overflow-hidden"
+        className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer mb-6 flex items-center justify-center w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 backdrop-blur-md hover:bg-white/[0.1] hover:scale-105 transition-all overflow-hidden"
       >
         <Image
           src="/bombinai-logo.png"
@@ -62,7 +62,7 @@ export default function Sidebar() {
             <Link
               key={item.id}
               href={href}
-              className={`sidebar-icon group ${isActive ? "active" : ""}`}
+              className={`sidebar-icon group pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${isActive ? "active" : ""}`}
               title={item.label}
               id={`nav-${item.id}`}
             >

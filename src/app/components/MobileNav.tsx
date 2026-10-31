@@ -34,7 +34,7 @@ export default function MobileNav() {
           <Link
             key={item.id}
             href={href}
-            className="flex flex-col items-center gap-0.5 py-1.5 px-1.5 rounded-xl transition-all relative"
+            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer flex flex-col items-center gap-0.5 py-1.5 px-1.5 rounded-xl transition-all"
             style={{ color: isActive ? "#00C9FF" : "var(--icon-muted)" }}
             id={`mobile-nav-${item.id}`}
           >

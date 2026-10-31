@@ -127,7 +127,7 @@ export default function HybridAssistant() {
           </div>
         </div>
         {messages.length > 0 && (
-          <button onClick={reset} className="text-xs transition-colors hover:opacity-80" style={{ color: "var(--text-dimmed)" }}>
+          <button onClick={reset} className="text-xs transition-colors hover:opacity-80 pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer" style={{ color: "var(--text-dimmed)" }}>
             Clear
           </button>
         )}
@@ -139,7 +139,7 @@ export default function HybridAssistant() {
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={`mode-tab ${mode === m ? "active" : ""}`}
+            className={`mode-tab pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${mode === m ? "active" : ""}`}
             id={`mode-${m}`}
           >
             {modeConfig[m].label}
@@ -229,7 +229,7 @@ export default function HybridAssistant() {
                     </p>
                     <button
                       onClick={() => handleCopy(i, msg.content)}
-                      className="mt-2.5 glass-pill px-3 py-1.5 flex items-center gap-1.5 text-[11px] transition-colors"
+                      className="mt-2.5 glass-pill pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 py-1.5 flex items-center gap-1.5 text-[11px] transition-colors"
                       style={{ color: "var(--text-muted)" }}
                     >
                       {copied === i ? (
@@ -262,7 +262,7 @@ export default function HybridAssistant() {
         {mode === "screenshot" && (
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors"
             style={{ background: "var(--bg-pill)", border: "1px solid var(--border-card)" }}
             title="Upload screenshot"
           >
@@ -281,7 +281,7 @@ export default function HybridAssistant() {
         <button
           onClick={handleSendText}
           disabled={!textInput.trim() || isGenerating}
-          className="btn-gradient w-9 h-9 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30"
+          className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30"
           id="assistant-send"
         >
           <Send className="w-4 h-4 text-white" />

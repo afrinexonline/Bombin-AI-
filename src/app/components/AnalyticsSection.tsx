@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import {
   AreaChart,
@@ -82,6 +82,16 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 export default function AnalyticsSection() {
   const [period, setPeriod] = useState<Period>("weekly");
   const [chartView, setChartView] = useState<ChartView>("area");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="h-[300px] animate-pulse bg-zinc-900/50 rounded-xl" />;
+  }
+
   const data = dataMap[period];
 
   return (
@@ -111,19 +121,19 @@ export default function AnalyticsSection() {
             <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: "var(--bg-pill)" }}>
               <button
                 onClick={() => setChartView("area")}
-                className={`px-2 py-1 rounded-md text-[11px] transition-all ${
+                className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-2 py-1 rounded-md text-[11px] transition-all ${
                   chartView === "area" ? "bg-cyan/15 text-cyan" : ""
                 }`}
-                style={chartView !== "area" ? { color: "var(--text-muted)" } : {}}
+                style={{ touchAction: "manipulation", ...(chartView !== "area" ? { color: "var(--text-muted)" } : {}) }}
               >
                 Area
               </button>
               <button
                 onClick={() => setChartView("bar")}
-                className={`px-2 py-1 rounded-md text-[11px] transition-all ${
+                className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-2 py-1 rounded-md text-[11px] transition-all ${
                   chartView === "bar" ? "bg-cyan/15 text-cyan" : ""
                 }`}
-                style={chartView !== "bar" ? { color: "var(--text-muted)" } : {}}
+                style={{ touchAction: "manipulation", ...(chartView !== "bar" ? { color: "var(--text-muted)" } : {}) }}
               >
                 Bar
               </button>
@@ -135,7 +145,8 @@ export default function AnalyticsSection() {
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
-                  className={`period-tab ${period === p ? "active" : ""}`}
+                  className={`period-tab pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${period === p ? "active" : ""}`}
+                  style={{ touchAction: "manipulation" }}
                   id={`period-${p}`}
                 >
                   {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -145,7 +156,10 @@ export default function AnalyticsSection() {
           </div>
         </div>
 
-        <div className="h-[260px] sm:h-[300px]">
+        <div
+          className="w-full min-w-0 relative h-[300px] min-h-[300px] flex-1"
+          style={{ width: "100%", height: "100%" }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             {chartView === "area" ? (
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -15 }}>
@@ -223,15 +237,18 @@ export default function AnalyticsSection() {
           </div>
         </div>
 
-        <div className="h-[200px] mb-4">
+        <div
+          className="w-full min-w-0 relative h-[220px] min-h-[220px] flex-1 mb-4"
+          style={{ width: "100%", height: "100%" }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={doughnutData}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={85}
+                innerRadius={50}
+                outerRadius={78}
                 paddingAngle={3}
                 dataKey="value"
                 animationDuration={800}

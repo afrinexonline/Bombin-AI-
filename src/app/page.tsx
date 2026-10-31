@@ -280,37 +280,39 @@ export default function LandingPage() {
 
       {/* ── TOP-BAR NAVIGATION ────────────────────────── */}
       <header className="relative z-50 w-full border-b border-white/[0.07] bg-transparent backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2 px-4 sm:px-8 py-3 min-h-[4.5rem]">
           {/* Left: Logo + Brand */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-4">
             <Image
               src="/bombinai-logo.png"
               alt="Bombin AI Logo"
               width={44}
               height={44}
-              className="h-8 sm:h-10 w-auto object-contain mix-blend-screen contrast-125 drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
+              className="h-7 sm:h-10 w-auto object-contain mix-blend-screen contrast-125 drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
               style={{ background: 'transparent' }}
               priority
             />
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(0,201,255,0.3)]">
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(0,201,255,0.3)]">
                 Bombin AI
               </h1>
-              <p className="text-xs text-slate-400 mt-0.5">AI Sales Closer</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">AI Sales Closer</p>
             </div>
           </div>
 
           {/* Right: CTAs */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setIsLoginModalOpen(true)}
-              className="px-5 py-2 text-sm font-medium border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 cursor-pointer"
+              style={{ touchAction: "manipulation" }}
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20"
             >
               Sign In
             </button>
             <button
               onClick={() => setIsSignUpModalOpen(true)}
-              className="btn-gradient px-6 py-2 text-sm font-bold text-white hover:scale-[1.02] transition-all transform hover:-translate-y-[1px] cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+              style={{ touchAction: "manipulation" }}
+              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3.5 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white hover:scale-[1.02] transition-all transform hover:-translate-y-[1px] shadow-[0_0_15px_rgba(59,130,246,0.3)]"
             >
               Start Selling
             </button>
@@ -321,9 +323,9 @@ export default function LandingPage() {
       {/* ── HERO SECTION [Node 1] ──────────────────────── */}
       <div className="relative overflow-hidden bg-black">
         {/* Localized Hero Aurora Blobs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="bg-blue-600/40 mix-blend-screen blur-[90px] w-[600px] h-[400px] absolute top-[-5%] right-[-5%] rounded-full transform-gpu animate-pulse" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/30 blur-[100px] rounded-full animate-pulse transform-gpu" />
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="bg-blue-600/40 mix-blend-screen blur-[90px] w-[600px] h-[400px] absolute top-[-5%] right-[-5%] rounded-full transform-gpu animate-pulse pointer-events-none z-0" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/30 blur-[100px] rounded-full animate-pulse transform-gpu pointer-events-none z-0" />
         </div>
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
@@ -352,13 +354,15 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-12 animate-fade-up delay-3">
             <button
               onClick={() => setIsSignUpModalOpen(true)}
-              className="btn-gradient px-8 py-4 text-base font-bold text-center text-white hover:scale-[1.02] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+              style={{ touchAction: "manipulation" }}
+              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-8 py-4 text-base font-bold text-center text-white hover:scale-[1.02] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
             >
               Connect WhatsApp <ArrowRight size={18} />
             </button>
             <Link
               href="/demo-dashboard"
-              className="px-8 py-4 text-base font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+              style={{ touchAction: "manipulation" }}
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-8 py-4 text-base font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
             >
               Interactive Demo
             </Link>
@@ -382,10 +386,10 @@ export default function LandingPage() {
         </div>
 
         {/* Right: WhatsApp Simulator — strict 420px height lock */}
-        <div className="lg:col-span-5 relative w-full flex justify-center animate-fade-up delay-2">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#00C9FF]/[0.04] to-[#7B2FBE]/[0.04] rounded-3xl filter blur-2xl -z-10" />
+        <div className="lg:col-span-5 relative w-full flex justify-center animate-fade-up delay-2 pointer-events-auto z-30">
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#00C9FF]/[0.04] to-[#7B2FBE]/[0.04] rounded-3xl filter blur-2xl pointer-events-none z-0" />
 
-          <div className="w-full max-w-[420px] overflow-hidden shadow-2xl relative border border-white/10 animate-floating bg-white/[0.04] backdrop-blur-2xl rounded-[20px]" style={{ height: '520px' }}>
+          <div className="w-full max-w-[420px] overflow-hidden shadow-2xl relative border border-white/10 animate-floating bg-white/[0.04] backdrop-blur-2xl rounded-[20px] pointer-events-auto z-30" style={{ height: '520px' }}>
             {/* WhatsApp header bar */}
             <div className="flex items-center justify-between px-4 py-3 bg-[#128C7E] shrink-0">
               <div className="flex items-center gap-3">
@@ -400,13 +404,14 @@ export default function LandingPage() {
             {/* Chat stream — locked, no page scroll */}
             <div
               ref={chatContainerRef}
-              className="p-4 space-y-4 flex flex-col justify-start overflow-y-auto bg-[#ece5dd] scrollbar-none"
-              style={{ height: '420px', maxHeight: '420px' }}
+              className="p-4 space-y-4 flex flex-col justify-start overflow-y-auto bg-[#ece5dd] scrollbar-none pointer-events-auto relative z-30 touch-action-manipulation"
+              style={{ height: '420px', maxHeight: '420px', touchAction: 'manipulation' }}
             >
               {simulationMessages.map((msg, idx) => (
                 <div
                   key={`${idx}-${msg.time}`}
-                  className={`flex flex-col max-w-[85%] chat-message ${
+                  style={{ touchAction: "manipulation" }}
+                  className={`flex flex-col max-w-[85%] chat-message pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${
                     msg.sender === "customer" ? "self-start items-start" : "self-end items-end"
                   }`}
                 >
@@ -424,7 +429,10 @@ export default function LandingPage() {
               ))}
 
               {isTyping && (
-                <div className="self-end flex items-center gap-1.5 bg-[#dcf8c6] p-3 rounded-2xl rounded-tr-sm text-xs text-slate-700 shadow-sm">
+                <div
+                  style={{ touchAction: "manipulation" }}
+                  className="self-end flex items-center gap-1.5 bg-[#dcf8c6] p-3 rounded-2xl rounded-tr-sm text-xs text-slate-700 shadow-sm pointer-events-auto relative z-30 touch-action-manipulation"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" />
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce delay-75" />
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce delay-150" />
@@ -434,7 +442,7 @@ export default function LandingPage() {
             </div>
 
             {/* Footer hint */}
-            <div className="bg-white px-4 py-3 text-center text-xs text-slate-500 border-t border-slate-200 shrink-0">
+            <div className="bg-white px-4 py-3 text-center text-xs text-slate-500 border-t border-slate-200 shrink-0 pointer-events-auto relative z-30">
               ⚡ Simulated Live WhatsApp Deal
             </div>
           </div>
@@ -520,19 +528,19 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {/* Card A: Missed Leads */}
             <div className="relative overflow-hidden bg-zinc-950/40 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-              <div className="absolute inset-0 -translate-x-full animate-[shimmer_3.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
+              <div className="absolute inset-0 pointer-events-none z-0 -translate-x-full animate-[shimmer_3.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
               <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">Missed Leads</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Losing buyers because your team is asleep, offline, or stuck in power outages.</p>
             </div>
             {/* Card B: Slow Responses */}
             <div className="relative overflow-hidden bg-zinc-950/40 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-              <div className="absolute inset-0 -translate-x-full animate-[shimmer_3.5s_infinite_0.8s] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
+              <div className="absolute inset-0 pointer-events-none z-0 -translate-x-full animate-[shimmer_3.5s_infinite_0.8s] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
               <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">Slow Responses</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Customers drop off to competitors if they do not get an immediate answer within 2 minutes.</p>
             </div>
             {/* Card C: Scale Limits */}
             <div className="relative overflow-hidden bg-zinc-950/40 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-              <div className="absolute inset-0 -translate-x-full animate-[shimmer_3.5s_infinite_1.6s] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
+              <div className="absolute inset-0 pointer-events-none z-0 -translate-x-full animate-[shimmer_3.5s_infinite_1.6s] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
               <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">Scale Limits</h3>
               <p className="text-slate-400 text-sm leading-relaxed">Human agents cannot physically type and chat with 100 frantic buyers simultaneously.</p>
             </div>
@@ -543,7 +551,7 @@ export default function LandingPage() {
       {/* ── MECHANICAL EDGE SECTION [Node 6] ─────────────── */}
       <div className="relative bg-[#07080a]">
         {/* Blueprint tech grid overlay */}
-        <div className="absolute inset-0 pointer-events-none [background-image:linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:3rem_3rem]" />
+        <div className="absolute inset-0 pointer-events-none z-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:3rem_3rem]" />
         <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-white/[0.06]">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight text-white">
@@ -615,7 +623,8 @@ export default function LandingPage() {
               <div className="grid grid-cols-2 gap-2 bg-white/[0.04] backdrop-blur-2xl p-1.5 rounded-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.7)] mb-6">
                 <button
                   onClick={() => setActiveTone("pidgin")}
-                  className={`py-2 text-xs font-semibold rounded-lg transition-all ${
+                  style={{ touchAction: "manipulation" }}
+                  className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer py-2 text-xs font-semibold rounded-lg transition-all ${
                     activeTone === "pidgin"
                       ? "bg-[#00C9FF]/20 text-[#00C9FF] border border-[#00C9FF]/30"
                       : "text-white/40 hover:text-white"
@@ -625,7 +634,8 @@ export default function LandingPage() {
                 </button>
                 <button
                   onClick={() => setActiveTone("corporate")}
-                  className={`py-2 text-xs font-semibold rounded-lg transition-all ${
+                  style={{ touchAction: "manipulation" }}
+                  className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer py-2 text-xs font-semibold rounded-lg transition-all ${
                     activeTone === "corporate"
                       ? "bg-[#00C9FF]/20 text-[#00C9FF] border border-[#00C9FF]/30"
                       : "text-white/40 hover:text-white"
@@ -673,7 +683,8 @@ export default function LandingPage() {
                   <button
                     key={m}
                     onClick={() => setChartMetric(m)}
-                    className={`text-xs px-3 py-1 rounded-full border transition-all ${
+                    style={{ touchAction: "manipulation" }}
+                    className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-xs px-3 py-1 rounded-full border transition-all ${
                       chartMetric === m
                         ? "bg-[#7B2FBE]/20 text-[#c084fc] border-[#7B2FBE]/40"
                         : "text-white/40 border-white/10 hover:text-white"
@@ -698,8 +709,8 @@ export default function LandingPage() {
                 <svg className="w-full h-20 overflow-visible" viewBox="0 0 100 40">
                   <defs>
                     <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={chartMetric === "revenue" ? "#00C9FF" : "#7B2FBE"} stopOpacity="0.35" />
-                      <stop offset="100%" stopColor={chartMetric === "revenue" ? "#00C9FF" : "#7B2FBE"} stopOpacity="0" />
+                      <stop offset="0%" stopColor={chartMetric === "revenue" ? "#00C9FF" : "#7B2FBE"} stopOpacity={0.35} />
+                      <stop offset="100%" stopColor={chartMetric === "revenue" ? "#00C9FF" : "#7B2FBE"} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   {chartMetric === "revenue" ? (
@@ -742,7 +753,8 @@ export default function LandingPage() {
                     <span className="text-[10px] text-white/40">{autopilot ? "AUTOPILOT" : "HUMAN TAKE"}</span>
                     <button
                       onClick={() => setAutopilot(!autopilot)}
-                      className={`w-10 h-5 rounded-full p-0.5 transition-colors cursor-pointer ${autopilot ? "bg-emerald-500" : "bg-amber-500"}`}
+                      style={{ touchAction: "manipulation" }}
+                      className={`pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-10 h-5 rounded-full p-0.5 transition-colors ${autopilot ? "bg-emerald-500" : "bg-amber-500"}`}
                     >
                       <div className={`bg-black w-4 h-4 rounded-full transition-transform ${autopilot ? "translate-x-5" : "translate-x-0"}`} />
                     </button>
@@ -935,7 +947,8 @@ export default function LandingPage() {
               >
                 <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left cursor-pointer group"
+                  style={{ touchAction: "manipulation" }}
+                  className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full px-6 py-5 flex items-center justify-between text-left group"
                 >
                   <span className={`text-sm font-semibold leading-snug pr-4 transition-colors ${isOpen ? "text-[#00C9FF]" : "text-white/80 group-hover:text-white"}`}>
                     {faq.q}
@@ -964,10 +977,10 @@ export default function LandingPage() {
 
       {/* ── CTA SECTION ───────────────────────────────── */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 py-28 text-center">
-        <div className="absolute inset-0 bg-[#00C9FF]/[0.03] rounded-3xl filter blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-[#00C9FF]/[0.03] rounded-3xl filter blur-3xl pointer-events-none z-0" />
 
         <div className="glass-heavy liquid-shimmer neon-glow-cyan p-10 sm:p-16 border border-white/10 relative overflow-hidden shine-effect animate-shimmer animate-fade-up delay-1">
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#00C9FF]/[0.03] rounded-full blur-[80px] -z-10" />
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#00C9FF]/[0.03] rounded-full blur-[80px] pointer-events-none z-0" />
 
           <h2 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight mb-6">
             Ready to Connect &{" "}
@@ -983,13 +996,15 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
               onClick={() => setIsSignUpModalOpen(true)}
-              className="btn-gradient w-full sm:w-auto px-10 py-4 font-bold text-center text-white hover:scale-[1.02] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-fade-up"
+              style={{ touchAction: "manipulation" }}
+              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full sm:w-auto px-10 py-4 font-bold text-center text-white hover:scale-[1.02] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-fade-up"
             >
               Start 4-Step Onboarding <ArrowRight size={18} />
             </button>
             <Link
               href="/demo-dashboard"
-              className="w-full sm:w-auto px-10 py-4 font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+              style={{ touchAction: "manipulation" }}
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full sm:w-auto px-10 py-4 font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
             >
               Explore Dashboard
             </Link>
@@ -1025,7 +1040,8 @@ export default function LandingPage() {
           <div className="glass-heavy w-full max-w-md p-8 relative animate-scale-in">
             <button
               onClick={() => setIsLoginModalOpen(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors cursor-pointer"
+              style={{ touchAction: "manipulation" }}
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
             >
               ✕
             </button>
@@ -1058,7 +1074,8 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="w-full bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-3 cursor-pointer mt-2"
+                style={{ touchAction: "manipulation" }}
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-3 mt-2"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -1076,7 +1093,8 @@ export default function LandingPage() {
               <button
                 type="submit"
                 disabled={loginLoading}
-                className="btn-gradient w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                style={{ touchAction: "manipulation" }}
+                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
               >
                 {loginLoading ? "Logging in..." : "Login"}
               </button>
@@ -1088,7 +1106,8 @@ export default function LandingPage() {
                   setIsLoginModalOpen(false);
                   setIsSignUpModalOpen(true);
                 }}
-                className="text-[#00C9FF] hover:underline bg-transparent border-none cursor-pointer"
+                style={{ touchAction: "manipulation" }}
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#00C9FF] hover:underline bg-transparent border-none"
               >
                 Start Selling
               </button>
@@ -1103,7 +1122,8 @@ export default function LandingPage() {
           <div className="glass-heavy w-full max-w-md p-8 relative animate-scale-in">
             <button
               onClick={() => setIsSignUpModalOpen(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors cursor-pointer"
+              style={{ touchAction: "manipulation" }}
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
             >
               ✕
             </button>
@@ -1138,7 +1158,8 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={handleGoogleSignUp}
-                className="w-full bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-3 cursor-pointer mt-2"
+                style={{ touchAction: "manipulation" }}
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-3 mt-2"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -1163,7 +1184,8 @@ export default function LandingPage() {
               <button
                 type="submit"
                 disabled={signUpLoading}
-                className="btn-gradient w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                style={{ touchAction: "manipulation" }}
+                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
               >
                 {signUpLoading ? "Creating Account..." : "Create Account & Start Onboarding"}
               </button>
@@ -1175,7 +1197,8 @@ export default function LandingPage() {
                   setIsSignUpModalOpen(false);
                   setIsLoginModalOpen(true);
                 }}
-                className="text-[#00C9FF] hover:underline bg-transparent border-none cursor-pointer"
+                style={{ touchAction: "manipulation" }}
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#00C9FF] hover:underline bg-transparent border-none"
               >
                 Sign In
               </button>

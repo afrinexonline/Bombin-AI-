@@ -1224,11 +1224,17 @@ body {
   background-size: 200% 100%;
   animation: liquid-shimmer-flow 6s ease-in-out infinite;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 
 .liquid-shimmer:hover::before {
   animation-duration: 3s;
+}
+
+.touch-action-manipulation,
+.touch-manipulation {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Neon Card Glow — Accent Hover for Landing Cards ── */

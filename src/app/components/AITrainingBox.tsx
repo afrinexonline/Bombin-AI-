@@ -53,7 +53,7 @@ export default function AITrainingBox() {
       <div className="flex items-center gap-2">
         <button
           onClick={handleSubmit}
-          className={`btn-gradient px-4 py-2.5 flex items-center gap-2 text-xs font-medium flex-1 justify-center ${
+          className={`btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-4 py-2.5 flex items-center gap-2 text-xs font-medium flex-1 justify-center ${
             isSubmitted ? "opacity-70" : ""
           }`}
           disabled={isSubmitted}
@@ -73,7 +73,7 @@ export default function AITrainingBox() {
         </button>
 
         <label
-          className="glass-pill px-4 py-2.5 flex items-center gap-2 text-xs cursor-pointer hover:opacity-80 transition-all"
+          className="glass-pill pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-4 py-2.5 flex items-center gap-2 text-xs hover:opacity-80 transition-all"
           style={{ color: "var(--text-muted)" }}
           id="upload-chat-btn"
         >

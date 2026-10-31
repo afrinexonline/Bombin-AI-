@@ -19,7 +19,7 @@ export default function DemoDashboardPage() {
   return (
     <div className="min-h-screen relative" style={{ background: "var(--bg-body)" }}>
       {/* Ambient Background */}
-      <div className="bg-ambient" />
+      <div className="bg-ambient pointer-events-none z-0" />
 
       {/* Desktop Sidebar */}
       <Sidebar />
@@ -48,13 +48,13 @@ export default function DemoDashboardPage() {
             <div className="flex items-center gap-2 self-end sm:self-auto">
               <Link
                 href="/"
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white border border-white/10 hover:bg-white/[0.06] transition-all flex items-center gap-1.5"
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white border border-white/10 hover:bg-white/[0.06] transition-all flex items-center gap-1.5"
               >
                 <ArrowLeft size={13} /> Back to Home
               </Link>
               <Link
                 href="/onboarding"
-                className="btn-gradient px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:scale-105 transition-all shadow-[0_0_12px_rgba(0,201,255,0.3)]"
+                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:scale-105 transition-all shadow-[0_0_12px_rgba(0,201,255,0.3)]"
               >
                 Start Onboarding
               </Link>
