@@ -1,61 +1,8 @@
 "use client";
 
-const deals = [
-  {
-    name: "Sarah Johnson",
-    company: "TechVenture Co.",
-    stage: "Proposal Sent",
-    progress: 75,
-    sentiment: "🔥",
-    value: "$12,400",
-    lastActive: "2 min ago",
-  },
-  {
-    name: "Marcus Chen",
-    company: "DataFlow Inc.",
-    stage: "Negotiation",
-    progress: 60,
-    sentiment: "💬",
-    value: "$8,900",
-    lastActive: "15 min ago",
-  },
-  {
-    name: "Amara Osei",
-    company: "GrowthStack",
-    stage: "Discovery Call",
-    progress: 35,
-    sentiment: "🔥",
-    value: "$22,000",
-    lastActive: "1 hr ago",
-  },
-  {
-    name: "James Whitfield",
-    company: "Apex Solutions",
-    stage: "Follow-up",
-    progress: 45,
-    sentiment: "❄️",
-    value: "$6,200",
-    lastActive: "3 hrs ago",
-  },
-  {
-    name: "Priya Sharma",
-    company: "NexGen Labs",
-    stage: "Closing",
-    progress: 90,
-    sentiment: "🔥",
-    value: "$34,500",
-    lastActive: "Just now",
-  },
-  {
-    name: "David Kim",
-    company: "Bright AI",
-    stage: "Interest Shown",
-    progress: 20,
-    sentiment: "💬",
-    value: "$5,000",
-    lastActive: "30 min ago",
-  },
-];
+import { dealMomentum } from "../lib/mockData";
+
+const deals = dealMomentum;
 
 export default function MomentumTracker() {
   return (

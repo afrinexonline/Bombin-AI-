@@ -40,6 +40,10 @@ export const revenueStats = [
 
 // ── Deal Momentum Data ────────────────────────────
 
+// Helper: format a number as Naira currency string
+export const formatNaira = (n: number) =>
+  `₦${n.toLocaleString("en-NG")}`;
+
 export const dealMomentum = [
   {
     name: "Sarah Johnson",
@@ -47,7 +51,8 @@ export const dealMomentum = [
     stage: "Proposal Sent",
     progress: 75,
     sentiment: "🔥",
-    value: "$12,400",
+    amount: 2400000,
+    value: "₦2,400,000",
     lastActive: "2 min ago",
   },
   {
@@ -56,7 +61,8 @@ export const dealMomentum = [
     stage: "Negotiation",
     progress: 60,
     sentiment: "💬",
-    value: "$8,900",
+    amount: 1200000,
+    value: "₦1,200,000",
     lastActive: "15 min ago",
   },
   {
@@ -65,7 +71,8 @@ export const dealMomentum = [
     stage: "Discovery Call",
     progress: 35,
     sentiment: "🔥",
-    value: "$22,000",
+    amount: 2500000,
+    value: "₦2,500,000",
     lastActive: "1 hr ago",
   },
   {
@@ -74,7 +81,8 @@ export const dealMomentum = [
     stage: "Follow-up",
     progress: 45,
     sentiment: "❄️",
-    value: "$6,200",
+    amount: 950000,
+    value: "₦950,000",
     lastActive: "3 hrs ago",
   },
   {
@@ -83,7 +91,8 @@ export const dealMomentum = [
     stage: "Closing",
     progress: 90,
     sentiment: "🔥",
-    value: "$34,500",
+    amount: 3000000,
+    value: "₦3,000,000",
     lastActive: "Just now",
   },
   {
@@ -92,7 +101,8 @@ export const dealMomentum = [
     stage: "Interest Shown",
     progress: 20,
     sentiment: "💬",
-    value: "$5,000",
+    amount: 800000,
+    value: "₦800,000",
     lastActive: "30 min ago",
   },
   {
@@ -101,7 +111,8 @@ export const dealMomentum = [
     stage: "Demo Scheduled",
     progress: 55,
     sentiment: "🔥",
-    value: "$18,700",
+    amount: 1800000,
+    value: "₦1,800,000",
     lastActive: "45 min ago",
   },
   {
@@ -110,7 +121,8 @@ export const dealMomentum = [
     stage: "Proposal Review",
     progress: 70,
     sentiment: "💬",
-    value: "$41,200",
+    amount: 2900000,
+    value: "₦2,900,000",
     lastActive: "10 min ago",
   },
 ];
@@ -159,6 +171,14 @@ export const closingCategories = [
 ];
 
 // ── Navigation Items ──────────────────────────────
+
+export const pipelineValue = "₦7,708,090";
+export const billingTiers = [
+  { name: "Starter", price: "₦14,700" },
+  { name: "Growth", price: "₦54,060" },
+  { name: "Enterprise", price: "₦250,000" },
+];
+export const avgDealSize = "₦1,680,070";
 
 export const navItems = [
   { icon: "Home", label: "Home", id: "home", href: "/dashboard" },

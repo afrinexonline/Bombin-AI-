@@ -1,40 +1,14 @@
 "use client";
 
-import { MessageCircle, Sun, Moon, Check } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { MessageCircle, Sun, Moon } from "lucide-react";
+import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import WhatsAppModal from "./WhatsAppModal";
 import Image from "next/image";
-import { useOnboarding } from "../context/OnboardingContext";
 
 export default function TopBar() {
-  const [showModal, setShowModal] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { data, updateField } = useOnboarding();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Sync connected state from context on mount
-  useEffect(() => {
-    setIsConnected(data.whatsappConnected);
-  }, [data.whatsappConnected]);
-
-  // Cleanup auto-connect timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  const handleConnectClick = () => {
-    if (isConnected) return;
-    setShowModal(true);
-    timerRef.current = setTimeout(() => {
-      setShowModal(false);
-      setIsConnected(true);
-      updateField("whatsappConnected", true);
-    }, 4000);
-  };
 
   return (
     <>
@@ -80,39 +54,29 @@ export default function TopBar() {
             </div>
           </button>
 
-          {/* Connect WhatsApp Button / Connected Badge */}
-          {isConnected ? (
-            <div
-              className="connected-badge pointer-events-auto relative z-30 touch-action-manipulation px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
-              id="connect-whatsapp"
-            >
-              <Check className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-              <span>✓ Connected</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnectClick}
-              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02]"
-              id="connect-whatsapp"
-              style={{
-                background: "rgba(37, 211, 102, 0.85)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid rgba(37, 211, 102, 0.4)",
-                color: "white",
-                cursor: "pointer",
-                boxShadow: "0 0 20px rgba(37, 211, 102, 0.2), 0 0 40px rgba(37, 211, 102, 0.1)",
-              }}
-            >
-              <MessageCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-              <span>Connect WhatsApp</span>
-            </button>
-          )}
+          {/* Connect WhatsApp Button */}
+          <button
+            onClick={() => setIsWhatsAppModalOpen(true)}
+            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02]"
+            id="connect-whatsapp"
+            style={{
+              background: "rgba(37, 211, 102, 0.85)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(37, 211, 102, 0.4)",
+              color: "white",
+              cursor: "pointer",
+              boxShadow: "0 0 20px rgba(37, 211, 102, 0.2), 0 0 40px rgba(37, 211, 102, 0.1)",
+            }}
+          >
+            <MessageCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            <span>Connect WhatsApp</span>
+          </button>
         </div>
       </header>
 
       {/* WhatsApp QR Modal */}
-      <WhatsAppModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <WhatsAppModal isOpen={isWhatsAppModalOpen} onClose={() => setIsWhatsAppModalOpen(false)} />
     </>
   );
 }

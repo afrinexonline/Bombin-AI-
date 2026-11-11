@@ -5,7 +5,7 @@ import { CreditCard, Check, Sparkles, Zap } from "lucide-react";
 const plans = [
   {
     name: "Starter",
-    price: "$29",
+    price: "₦14,700",
     period: "/mo",
     features: ["500 AI responses/mo", "1 WhatsApp account", "Basic analytics", "Email support"],
     current: false,
@@ -13,7 +13,7 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "$79",
+    price: "₦54,060",
     period: "/mo",
     features: [
       "5,000 AI responses/mo",
@@ -28,7 +28,7 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "$199",
+    price: "₦250,000",
     period: "/mo",
     features: [
       "Unlimited AI responses",
@@ -77,7 +77,7 @@ export default function BillingPage() {
                 Current Plan: <span className="text-cyan">Growth</span>
               </p>
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Trial ends in 18 hours • Renews at $79/mo
+                Trial ends in 18 hours • Renews at ₦54,060/mo
               </p>
             </div>
           </div>
@@ -150,9 +150,9 @@ export default function BillingPage() {
         </h3>
         <div className="flex flex-col gap-2">
           {[
-            { date: "Apr 30, 2026", amount: "$79.00", status: "Paid" },
-            { date: "Mar 30, 2026", amount: "$79.00", status: "Paid" },
-            { date: "Feb 28, 2026", amount: "$79.00", status: "Paid" },
+            { date: "Apr 30, 2026", amount: "₦54,060.00", status: "Paid" },
+            { date: "Mar 30, 2026", amount: "₦54,060.00", status: "Paid" },
+            { date: "Feb 28, 2026", amount: "₦54,060.00", status: "Paid" },
           ].map((inv, i) => (
             <div
               key={i}

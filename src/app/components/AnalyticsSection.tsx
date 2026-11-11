@@ -73,7 +73,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
       style={{ background: "var(--bg-card)", border: "1px solid var(--border-card)" }}
     >
       <p className="font-medium mb-1" style={{ color: "var(--text-primary)" }}>{label}</p>
-      <p style={{ color: "#00C9FF" }}>Sales: ${payload[0].value.toLocaleString()}</p>
+      <p style={{ color: "#00C9FF" }}>Sales: ₦{payload[0].value.toLocaleString()}</p>
       {payload[1] && <p style={{ color: "#7B2FBE" }}>Deals: {payload[1].value}</p>}
     </div>
   );

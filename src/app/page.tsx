@@ -145,11 +145,11 @@ export default function LandingPage() {
       });
       if (authError) throw authError;
       setIsLoginModalOpen(false);
-      router.push("/dashboard");
+      router.push("/demo-dashboard");
     } catch (err: any) {
       console.warn("Supabase Auth signIn failed, proceeding with fallback mock session for local test:", err.message);
       setIsLoginModalOpen(false);
-      router.push("/dashboard");
+      router.push("/demo-dashboard");
     } finally {
       setLoginLoading(false);
     }
@@ -201,13 +201,16 @@ export default function LandingPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/demo-dashboard`,
+        },
       });
       if (error) throw error;
     } catch (err: any) {
       console.warn("Google OAuth failed, proceeding with fallback mock session for local test:", err.message);
       setIsLoginModalOpen(false);
       setIsSignUpModalOpen(false);
-      router.push("/dashboard");
+      router.push("/demo-dashboard");
     }
   };
 

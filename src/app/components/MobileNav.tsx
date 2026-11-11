@@ -28,12 +28,25 @@ export default function MobileNav() {
     <nav className="mobile-nav fixed bottom-0 left-0 right-0 z-50 lg:hidden flex items-center justify-around py-2 px-2">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = getIsActive(item.href);
-        const href = pathname === "/demo-dashboard" && item.href === "/dashboard" ? "/demo-dashboard" : item.href;
+        const isDemo = pathname.startsWith("/demo-dashboard");
+        const isActive = isDemo
+          ? (item.href === "/dashboard" && pathname === "/demo-dashboard") ||
+            (item.href !== "/dashboard" && pathname.startsWith("/demo-dashboard" + item.href.replace("/dashboard", "").replace(/^\//, "/")))
+          : getIsActive(item.href);
+        // Remap hrefs for demo context
+        let href = item.href;
+        if (isDemo) {
+          if (item.href === "/dashboard") {
+            href = "/demo-dashboard";
+          } else {
+            href = "/demo-dashboard" + item.href;
+          }
+        }
         return (
           <Link
             key={item.id}
             href={href}
+            prefetch={true}
             className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer flex flex-col items-center gap-0.5 py-1.5 px-1.5 rounded-xl transition-all"
             style={{ color: isActive ? "#00C9FF" : "var(--icon-muted)" }}
             id={`mobile-nav-${item.id}`}

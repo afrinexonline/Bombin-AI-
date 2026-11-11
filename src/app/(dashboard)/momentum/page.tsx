@@ -4,10 +4,8 @@ import { Zap, ArrowUpRight, ArrowDownRight, Clock, Filter } from "lucide-react";
 import { dealMomentum } from "../../lib/mockData";
 
 export default function MomentumPage() {
-  const totalValue = dealMomentum.reduce((sum, d) => {
-    const num = parseFloat(d.value.replace(/[$,]/g, ""));
-    return sum + num;
-  }, 0);
+  const totalValue = dealMomentum.reduce((sum, d) => sum + (d.amount ?? 0), 0);
+  const formattedPipeline = `₦${totalValue.toLocaleString("en-NG")}`;
 
   const hotDeals = dealMomentum.filter((d) => d.sentiment === "🔥").length;
   const coldDeals = dealMomentum.filter((d) => d.sentiment === "❄️").length;
@@ -47,7 +45,7 @@ export default function MomentumPage() {
             Pipeline Value
           </p>
           <p className="text-2xl font-bold glow-number">
-            ${totalValue.toLocaleString()}
+            {formattedPipeline}
           </p>
           <div className="flex items-center gap-1 mt-2">
             <ArrowUpRight className="w-3.5 h-3.5 text-success" />

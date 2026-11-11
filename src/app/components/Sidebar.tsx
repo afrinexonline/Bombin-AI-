@@ -38,7 +38,8 @@ export default function Sidebar() {
     <aside className="sidebar fixed left-0 top-0 bottom-0 w-[72px] z-40 hidden lg:flex flex-col items-center py-6 gap-2">
       {/* Logo */}
       <Link
-        href={pathname === "/demo-dashboard" ? "/demo-dashboard" : "/dashboard"}
+        href={pathname.startsWith("/demo-dashboard") ? "/demo-dashboard" : "/dashboard"}
+        prefetch={true}
         className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer mb-6 flex items-center justify-center w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 backdrop-blur-md hover:bg-white/[0.1] hover:scale-105 transition-all overflow-hidden"
       >
         <Image
@@ -56,12 +57,26 @@ export default function Sidebar() {
       <nav className="flex flex-col gap-1 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = getIsActive(item.href);
-          const href = pathname === "/demo-dashboard" && item.href === "/dashboard" ? "/demo-dashboard" : item.href;
+          const isDemo = pathname.startsWith("/demo-dashboard");
+          const isActive = isDemo
+            ? (item.href === "/dashboard" && pathname === "/demo-dashboard") ||
+              (item.href !== "/dashboard" && pathname.startsWith("/demo-dashboard" + item.href.replace("/dashboard", "").replace(/^\//, "/")))
+            : getIsActive(item.href);
+          // Remap hrefs for demo context
+          let href = item.href;
+          if (isDemo) {
+            if (item.href === "/dashboard") {
+              href = "/demo-dashboard";
+            } else {
+              // e.g. /momentum → /demo-dashboard/momentum
+              href = "/demo-dashboard" + item.href;
+            }
+          }
           return (
             <Link
               key={item.id}
               href={href}
+              prefetch={true}
               className={`sidebar-icon group pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer ${isActive ? "active" : ""}`}
               title={item.label}
               id={`nav-${item.id}`}
