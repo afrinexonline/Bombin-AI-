@@ -1,6 +1,10 @@
 "use client";
 
-import { CreditCard, Check, Sparkles, Zap } from "lucide-react";
+import { CreditCard, Check, Sparkles, Zap, Receipt } from "lucide-react";
+import EmptyState from "../../components/EmptyState";
+
+// Real invoices arrive with payments (later milestone). Never show fake ones.
+const invoices: { date: string; amount: string; status: string }[] = [];
 
 const plans = [
   {
@@ -23,7 +27,7 @@ const plans = [
       "Custom AI training",
       "Deal momentum tracking",
     ],
-    current: true,
+    current: false,
     highlight: true,
   },
   {
@@ -74,15 +78,21 @@ export default function BillingPage() {
             </div>
             <div>
               <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                Current Plan: <span className="text-cyan">Growth</span>
+                Current Plan: <span className="text-cyan">None yet</span>
               </p>
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Trial ends in 18 hours • Renews at ₦54,060/mo
+                Payments are coming soon. You will not be charged anything today.
               </p>
             </div>
           </div>
-          <button className="glass-pill px-4 py-2 text-xs font-medium transition-all hover:opacity-80" style={{ color: "var(--text-muted)" }}>
-            Manage Payment Method
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="glass-pill px-4 py-2 text-xs font-medium cursor-not-allowed opacity-60"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Payments coming soon
           </button>
         </div>
       </div>
@@ -101,7 +111,7 @@ export default function BillingPage() {
                 className="absolute top-0 right-0 px-3 py-1 text-[10px] font-semibold text-white rounded-bl-lg"
                 style={{ background: "linear-gradient(135deg, #00C9FF, #7B2FBE)" }}
               >
-                Current Plan
+                Most Popular
               </div>
             )}
 
@@ -128,16 +138,15 @@ export default function BillingPage() {
               ))}
             </ul>
 
+            {/* No payments yet: this button must never pretend to charge or subscribe. */}
             <button
-              className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                plan.current
-                  ? "glass-pill cursor-default"
-                  : "btn-gradient hover:scale-[1.02]"
-              }`}
-              style={plan.current ? { color: "var(--text-muted)" } : {}}
-              disabled={plan.current}
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="w-full py-2.5 rounded-xl text-xs font-semibold glass-pill cursor-not-allowed opacity-70"
+              style={{ color: "var(--text-muted)" }}
             >
-              {plan.current ? "Current Plan" : "Upgrade"}
+              Payments coming soon
             </button>
           </div>
         ))}
@@ -149,11 +158,10 @@ export default function BillingPage() {
           Recent Invoices
         </h3>
         <div className="flex flex-col gap-2">
-          {[
-            { date: "Apr 30, 2026", amount: "₦54,060.00", status: "Paid" },
-            { date: "Mar 30, 2026", amount: "₦54,060.00", status: "Paid" },
-            { date: "Feb 28, 2026", amount: "₦54,060.00", status: "Paid" },
-          ].map((inv, i) => (
+          {invoices.length === 0 && (
+            <EmptyState title="No invoices yet" icon={Receipt} message="Invoices will appear here once payments are live." />
+          )}
+          {invoices.map((inv, i) => (
             <div
               key={i}
               className="flex items-center justify-between py-3 px-4 rounded-xl"

@@ -1,11 +1,13 @@
 "use client";
 
 import { Zap, ArrowUpRight, ArrowDownRight, Clock, Filter } from "lucide-react";
-import { dealMomentum } from "../../lib/mockData";
+import { deals as dealMomentum, formatNaira } from "../../lib/dashboardData";
+import EmptyState from "../../components/EmptyState";
 
 export default function MomentumPage() {
+  const hasData = dealMomentum.length > 0;
   const totalValue = dealMomentum.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-  const formattedPipeline = `₦${totalValue.toLocaleString("en-NG")}`;
+  const formattedPipeline = formatNaira(totalValue);
 
   const hotDeals = dealMomentum.filter((d) => d.sentiment === "🔥").length;
   const coldDeals = dealMomentum.filter((d) => d.sentiment === "❄️").length;
@@ -31,10 +33,12 @@ export default function MomentumPage() {
           </div>
         </div>
         <button
-          className="glass-pill px-4 py-2 flex items-center gap-2 text-xs transition-all hover:opacity-80"
+          type="button"
+          disabled
+          className="glass-pill px-4 py-2 flex items-center gap-2 text-xs cursor-not-allowed opacity-60"
           style={{ color: "var(--text-muted)" }}
         >
-          <Filter className="w-3.5 h-3.5" /> Filters
+          <Filter className="w-3.5 h-3.5" /> Filters coming soon
         </button>
       </div>
 
@@ -44,21 +48,21 @@ export default function MomentumPage() {
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
             Pipeline Value
           </p>
-          <p className="text-2xl font-bold glow-number">
-            {formattedPipeline}
-          </p>
-          <div className="flex items-center gap-1 mt-2">
-            <ArrowUpRight className="w-3.5 h-3.5 text-success" />
-            <span className="text-xs text-success">+18.3% vs last week</span>
-          </div>
+          {hasData ? (
+            <p className="text-2xl font-bold glow-number">{formattedPipeline}</p>
+          ) : (
+            <p className="text-base font-medium pt-1" style={{ color: "var(--text-dimmed)" }}>No data yet</p>
+          )}
         </div>
         <div className="glass-card p-5">
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
             Hot Deals
           </p>
-          <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-            {hotDeals} 🔥
-          </p>
+          {hasData ? (
+            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{hotDeals} 🔥</p>
+          ) : (
+            <p className="text-base font-medium pt-1" style={{ color: "var(--text-dimmed)" }}>No data yet</p>
+          )}
           <div className="flex items-center gap-1 mt-2">
             <ArrowUpRight className="w-3.5 h-3.5 text-success" />
             <span className="text-xs text-success">Ready to close</span>
@@ -68,9 +72,11 @@ export default function MomentumPage() {
           <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
             Cold Deals
           </p>
-          <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-            {coldDeals} ❄️
-          </p>
+          {hasData ? (
+            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{coldDeals} ❄️</p>
+          ) : (
+            <p className="text-base font-medium pt-1" style={{ color: "var(--text-dimmed)" }}>No data yet</p>
+          )}
           <div className="flex items-center gap-1 mt-2">
             <ArrowDownRight className="w-3.5 h-3.5 text-warning" />
             <span className="text-xs text-warning">Needs attention</span>
@@ -84,11 +90,17 @@ export default function MomentumPage() {
           <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             All Active Deals
           </h3>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
-          </span>
+          {hasData && (
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+            </span>
+          )}
         </div>
+
+        {!hasData && (
+          <EmptyState message="Deals will appear here once customers start chatting with you on WhatsApp." />
+        )}
 
         <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] pr-1">
           {dealMomentum.map((deal, i) => (

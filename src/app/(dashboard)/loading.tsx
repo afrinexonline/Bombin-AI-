@@ -1,4 +1,4 @@
-export default function DemoDashboardLoading() {
+export default function DashboardLoading() {
   return (
     <div className="w-full space-y-5 animate-fade-in py-2">
       {/* Metric Cards Skeleton */}
@@ -20,7 +20,7 @@ export default function DemoDashboardLoading() {
         <div className="lg:col-span-8 glass-card p-6 h-80 flex flex-col items-center justify-center gap-3 animate-pulse">
           <div className="w-8 h-8 rounded-full border-2 border-cyan/20 border-t-cyan animate-spin" />
           <span className="text-xs text-white/50 font-medium tracking-wide">
-            Loading demo view...
+            Loading...
           </span>
         </div>
         <div className="lg:col-span-4 glass-card p-6 h-80 flex flex-col gap-3 animate-pulse">

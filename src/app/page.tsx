@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
@@ -144,12 +143,21 @@ export default function LandingPage() {
         password: loginPassword,
       });
       if (authError) throw authError;
+      if (!authData?.session) throw new Error("No session returned");
       setIsLoginModalOpen(false);
-      router.push("/demo-dashboard");
+      router.push("/dashboard");
     } catch (err: any) {
-      console.warn("Supabase Auth signIn failed, proceeding with fallback mock session for local test:", err.message);
-      setIsLoginModalOpen(false);
-      router.push("/demo-dashboard");
+      // Never let a failed login reach any dashboard. Stay on the form and explain.
+      const msg: string = err?.message ?? "";
+      if (/invalid login credentials/i.test(msg)) {
+        setLoginError("Wrong email or password. Please try again.");
+      } else if (/email not confirmed/i.test(msg)) {
+        setLoginError("Please confirm your email address first, then sign in.");
+      } else if (/fetch/i.test(msg)) {
+        setLoginError("Could not reach the server. Check your internet connection and try again.");
+      } else {
+        setLoginError("Sign-in failed. Please try again.");
+      }
     } finally {
       setLoginLoading(false);
     }
@@ -202,15 +210,13 @@ export default function LandingPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/demo-dashboard`,
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/dashboard`,
         },
       });
       if (error) throw error;
-    } catch (err: any) {
-      console.warn("Google OAuth failed, proceeding with fallback mock session for local test:", err.message);
-      setIsLoginModalOpen(false);
-      setIsSignUpModalOpen(false);
-      router.push("/demo-dashboard");
+    } catch {
+      // Stay on the form; never fall through to a dashboard.
+      setLoginError("Google sign-in is not available right now. Please use your email and password.");
     }
   };
 
@@ -223,13 +229,9 @@ export default function LandingPage() {
         },
       });
       if (error) throw error;
-    } catch (err: any) {
-      console.warn("Google OAuth SignUp failed, proceeding with fallback mock session for local test:", err.message);
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem("bombin-onboarding");
-      }
-      setIsSignUpModalOpen(false);
-      router.push("/onboarding");
+    } catch {
+      // Stay on the form; never fall through to onboarding without an account.
+      setSignUpError("Google sign-up is not available right now. Please sign up with your email and a password.");
     }
   };
 
@@ -354,7 +356,7 @@ export default function LandingPage() {
             The only AI closer with Cultural Intelligence. Master English, Pidgin, and local context to close deals 24/7 while you sleep.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-12 animate-fade-up delay-3">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-3 animate-fade-up delay-3">
             <button
               onClick={() => setIsSignUpModalOpen(true)}
               style={{ touchAction: "manipulation" }}
@@ -362,28 +364,22 @@ export default function LandingPage() {
             >
               Connect WhatsApp <ArrowRight size={18} />
             </button>
-            <Link
-              href="/demo-dashboard"
-              style={{ touchAction: "manipulation" }}
-              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-8 py-4 text-base font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-            >
-              Interactive Demo
-            </Link>
           </div>
+          <p className="text-sm text-white/50 mb-12 animate-fade-up delay-3">Now in early access. Launching soon.</p>
 
           {/* Social Proof */}
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/[0.07] w-full animate-fade-up delay-4">
             <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#00C9FF] filter drop-shadow-[0_0_8px_rgba(0,201,255,0.3)]">2.5k+</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Active Vendors</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-[#00C9FF] filter drop-shadow-[0_0_8px_rgba(0,201,255,0.3)]">2</p>
+              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">English &amp; Pidgin</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#7B2FBE] filter drop-shadow-[0_0_8px_rgba(123,47,190,0.3)]">₦920M+</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Sales Processed</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-[#7B2FBE] filter drop-shadow-[0_0_8px_rgba(123,47,190,0.3)]">24/7</p>
+              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Replies 24/7</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 filter drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">98.4%</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Deal Conversion</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 filter drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">₦</p>
+              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Built for Nigerian vendors</p>
             </div>
           </div>
         </div>
@@ -402,6 +398,9 @@ export default function LandingPage() {
                   <span className="text-[10px] text-emerald-100 font-medium">Active Auto-Closer</span>
                 </div>
               </div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/90 bg-white/15 border border-white/25 px-2 py-0.5 rounded-full">
+                Example chat
+              </span>
             </div>
 
             {/* Chat stream — locked, no page scroll */}
@@ -455,7 +454,7 @@ export default function LandingPage() {
 
       {/* ── SOCIAL PROOF BAR ──────────────────────────── */}
       <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-3 py-5 border-y border-blue-500/10 bg-white/[0.02] px-6 text-center">
-        <span className="text-xs font-bold tracking-widest uppercase text-white/60">Trusted by 500+ West African E-Commerce Brands &amp; Online Vendors</span>
+        <span className="text-xs font-bold tracking-widest uppercase text-white/60">Built for West African vendors</span>
         <span className="hidden sm:block text-white/10">|</span>
         <span className="flex items-center gap-2">
           <span className="text-slate-500">🛡️</span>
@@ -565,7 +564,7 @@ export default function LandingPage() {
               {" "}via QR code.
             </h2>
             <p className="text-slate-400 text-base md:text-lg text-center max-w-2xl mx-auto">
-              Our AI listens to customer voice notes, reviews attached images/receipts, and responds accurately.
+              Our AI reads your customers&apos; messages and responds accurately. Voice notes and receipt images are coming soon.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -573,6 +572,7 @@ export default function LandingPage() {
             <div className="relative overflow-hidden bg-zinc-950/40 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
               <div className="absolute inset-0 z-0 pointer-events-none -translate-x-full animate-[shimmer_3.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
               <div className="relative z-10 w-full">
+                <span className="inline-block mb-3 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 bg-cyan-400/10 border border-cyan-400/30 px-2 py-0.5 rounded-full">Coming soon</span>
                 <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">Instant QR Pairing</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">No complex business verification or corporate registration documents required. Scan a QR code inside your dashboard and go live in 5 seconds flat.</p>
               </div>
@@ -581,8 +581,9 @@ export default function LandingPage() {
             <div className="relative overflow-hidden bg-zinc-950/40 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
               <div className="absolute inset-0 z-0 pointer-events-none -translate-x-full animate-[shimmer_3.5s_infinite_0.8s] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transform-gpu" />
               <div className="relative z-10 w-full">
+                <span className="inline-block mb-3 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 bg-cyan-400/10 border border-cyan-400/30 px-2 py-0.5 rounded-full">Coming soon</span>
                 <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">True AI Voice &amp; Media Understanding</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">While basic bots struggle with audio, Bombin AI processes local voice notes, interprets pidgin nuances, and reviews attached payment screenshot images seamlessly.</p>
+                <p className="text-slate-400 text-sm leading-relaxed">Bombin AI understands Pidgin nuances. Coming soon: it will also process local voice notes and review payment screenshot images.</p>
               </div>
             </div>
             {/* Card 3: Zero Message Tolls */}
@@ -652,7 +653,7 @@ export default function LandingPage() {
               <div className="bg-white/[0.04] backdrop-blur-2xl rounded-xl p-4 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.7)] text-xs space-y-3 font-mono">
                 <div className="flex justify-between text-[10px] text-white/30 pb-1 border-b border-white/[0.06]">
                   <span>Customer Query</span>
-                  <span>Active Live Preview</span>
+                  <span>Example preview</span>
                 </div>
                 <p className="text-white/50">Customer: &quot;How much is delivery to Lekki?&quot;</p>
                 <div className="pt-2 border-t border-white/[0.06] text-[#00C9FF]">
@@ -1004,13 +1005,6 @@ export default function LandingPage() {
             >
               Start 4-Step Onboarding <ArrowRight size={18} />
             </button>
-            <Link
-              href="/demo-dashboard"
-              style={{ touchAction: "manipulation" }}
-              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full sm:w-auto px-10 py-4 font-semibold text-center border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-            >
-              Explore Dashboard
-            </Link>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 mt-12 text-xs text-white/30 font-mono border-t border-white/[0.06] pt-8">

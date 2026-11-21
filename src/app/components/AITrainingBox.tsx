@@ -1,17 +1,14 @@
 "use client";
 
-import { Brain, Upload, Sparkles, Send } from "lucide-react";
+import { Brain, Upload, Send } from "lucide-react";
 import { useState } from "react";
 
+/*
+ * AI Training box. Saving and training are not built yet, so the buttons
+ * are switched off and labelled "coming soon". Nothing pretends to save.
+ */
 export default function AITrainingBox() {
   const [vibeText, setVibeText] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSubmit = () => {
-    if (!vibeText.trim()) return;
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 2000);
-  };
 
   return (
     <div className="glass-card p-5 animate-fade-up delay-4 flex flex-col" id="ai-training-box">
@@ -52,42 +49,32 @@ export default function AITrainingBox() {
       {/* Actions */}
       <div className="flex items-center gap-2">
         <button
-          onClick={handleSubmit}
-          className={`btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-4 py-2.5 flex items-center gap-2 text-xs font-medium flex-1 justify-center ${
-            isSubmitted ? "opacity-70" : ""
-          }`}
-          disabled={isSubmitted}
+          type="button"
+          disabled
+          className="btn-gradient px-4 py-2.5 flex items-center gap-2 text-xs font-medium flex-1 justify-center cursor-not-allowed opacity-50"
           id="save-vibe-btn"
         >
-          {isSubmitted ? (
-            <>
-              <Sparkles className="w-3.5 h-3.5 animate-spin" />
-              Training...
-            </>
-          ) : (
-            <>
-              <Send className="w-3.5 h-3.5" />
-              Save Vibe
-            </>
-          )}
+          <Send className="w-3.5 h-3.5" />
+          Saving coming soon
         </button>
 
-        <label
-          className="glass-pill pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-4 py-2.5 flex items-center gap-2 text-xs hover:opacity-80 transition-all"
+        <button
+          type="button"
+          disabled
+          className="glass-pill px-4 py-2.5 flex items-center gap-2 text-xs cursor-not-allowed opacity-60"
           style={{ color: "var(--text-muted)" }}
           id="upload-chat-btn"
         >
           <Upload className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Upload Chat History</span>
-          <span className="sm:hidden">Upload</span>
-          <input type="file" className="hidden" accept=".txt,.csv,.json" />
-        </label>
+          <span className="hidden sm:inline">Upload coming soon</span>
+          <span className="sm:hidden">Soon</span>
+        </button>
       </div>
 
       {/* Status */}
       <div className="mt-3 flex items-center gap-2 text-[11px]" style={{ color: "var(--text-dimmed)" }}>
-        <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-        <span>AI model synced • Last trained 4 hours ago</span>
+        <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--text-dimmed)" }} />
+        <span>AI not trained yet • Training is coming soon</span>
       </div>
     </div>
   );

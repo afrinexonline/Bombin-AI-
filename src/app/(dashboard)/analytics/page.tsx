@@ -1,5 +1,6 @@
 import AnalyticsSection from "../../components/AnalyticsSection";
 import { BarChart3 } from "lucide-react";
+import { analyticsSummary } from "../../lib/dashboardData";
 
 export const metadata = {
   title: "Analytics — BOMBIN AI",
@@ -28,20 +29,21 @@ export default function AnalyticsPage() {
 
       {/* Summary Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-up delay-1">
-        {[
-          { label: "Conversion Rate", value: "34.2%", change: "+5.1%" },
-          { label: "Avg. Deal Size", value: "₦1,680,070", change: "+₦42,000" },
-          { label: "Win Rate", value: "68%", change: "+12%" },
-          { label: "Avg. Close Time", value: "4.2 days", change: "-0.8d" },
-        ].map((stat) => (
+        {analyticsSummary.map((stat) => (
           <div key={stat.label} className="glass-card p-4">
             <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
               {stat.label}
             </p>
-            <p className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-              {stat.value}
-            </p>
-            <span className="text-xs text-success">{stat.change}</span>
+            {stat.value ? (
+              <p className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+                {stat.value}
+              </p>
+            ) : (
+              <p className="text-sm font-medium pt-1" style={{ color: "var(--text-dimmed)" }}>
+                No data yet
+              </p>
+            )}
+            {stat.change && <span className="text-xs text-success">{stat.change}</span>}
           </div>
         ))}
       </div>

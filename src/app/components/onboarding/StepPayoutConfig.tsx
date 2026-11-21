@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Landmark, Loader2, CheckCircle2, ChevronDown } from "lucide-react";
+import { Landmark, ChevronDown, Info } from "lucide-react";
 import { useOnboarding } from "../../context/OnboardingContext";
 
 /* ═══════════════════════════════════════════════════
@@ -33,9 +33,6 @@ export default function StepPayoutConfig() {
   const [bankSearch, setBankSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,22 +43,6 @@ export default function StepPayoutConfig() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Name Resolution Engine Simulation
-  useEffect(() => {
-    if (data.bankName && data.accountNumber?.length === 10) {
-      setIsVerifying(true);
-      setIsVerified(false);
-      const timer = setTimeout(() => {
-        setIsVerifying(false);
-        setIsVerified(true);
-      }, 1200);
-      return () => clearTimeout(timer);
-    } else {
-      setIsVerifying(false);
-      setIsVerified(false);
-    }
-  }, [data.bankName, data.accountNumber]);
 
   const togglePaymentMethod = (method: string) => {
     const current = data.paymentMethods || [];
@@ -139,24 +120,11 @@ export default function StepPayoutConfig() {
           <label className={LABEL_CLASSES}>Account Number</label>
         </div>
         
-        {/* Simulated Name Resolution */}
-        {(isVerifying || isVerified) && (
-          <div className="absolute right-3 top-[14px] flex items-center gap-2 text-[11px] font-medium animate-fade-in pointer-events-none">
-            {isVerifying ? (
-              <>
-                <Loader2 size={14} className="animate-spin text-purple-400" />
-                <span className="text-purple-400">Verifying...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={14} className="text-emerald-400" />
-                <span className="text-emerald-400 max-w-[120px] sm:max-w-[150px] truncate" title={`✓ Account Verified: ${data.userName || data.businessName || "Business Owner"}`}>
-                  ✓ Account Verified: {data.userName || data.businessName || "Business Owner"}
-                </span>
-              </>
-            )}
-          </div>
-        )}
+        {/* Honest note: there is no real bank check yet */}
+        <p className="flex items-start gap-1.5 mt-2 text-[11px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
+          <Info size={13} className="shrink-0 mt-[1px] text-blue-400" />
+          We save your account name and number exactly as you type them. Checking them with your bank is coming later, so please double-check they are correct.
+        </p>
       </div>
 
       {/* Bank Selection */}

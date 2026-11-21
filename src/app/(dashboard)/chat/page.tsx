@@ -2,6 +2,7 @@
 
 import { MessageSquare, Bot, User as UserIcon, Send, Keyboard } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import EmptyState from "../../components/EmptyState";
 
 interface Message {
   id: number;
@@ -11,16 +12,9 @@ interface Message {
   time: string;
 }
 
-const preloadedMessages: Message[] = [
-  { id: 1, sender: "customer", name: "Chief Okoro", text: "Good afternoon! I saw your Chesterfield collection on Instagram. I need two pieces for my Abuja mansion. What's the price and delivery timeline?", time: "2:14 PM" },
-  { id: 2, sender: "ai", text: "Good afternoon, Chief! 🙏 Welcome to our showroom. Our Premium Chesterfield set goes for ₦1,200,000 per piece. For Abuja delivery, we handle logistics door-to-door within 5-7 working days. Would you like to see the leather swatches? I can send photos right away! 📸", time: "2:14 PM" },
-  { id: 3, sender: "customer", name: "Mrs. Adebayo", text: "Pls how much for the consulting inspection fee for Port Harcourt? My friend said you people are good with interior design.", time: "2:31 PM" },
-  { id: 4, sender: "ai", text: "Thank you ma! 😊 Our Consulting & Inspection fee for Port Harcourt is ₦50,000. This covers a full site assessment, mood board creation, and material recommendations. We can schedule a visit this week if you're available. Should I check our calendar? 📅", time: "2:31 PM" },
-  { id: 5, sender: "customer", name: "Engr. Nnamdi", text: "Bros abeg, I wan furnish my new apartment for Lekki. Budget na around 5M. Wetin una fit do?", time: "3:05 PM" },
-  { id: 6, sender: "ai", text: "My guy! 🔥 5M budget dey very correct o! For that range, we fit hook you up with: \n\n• Full living room set (Chesterfield + Ottoman) — ₦2.4M\n• Dining set (6-seater marble top) — ₦1.2M\n• Master bedroom ensemble — ₦1.1M\n• Delivery & installation — FREE\n\nTotal: ₦4.7M — you still get ₦300k change! 💰 Make I send you the catalog?", time: "3:05 PM" },
-  { id: 7, sender: "customer", name: "Hajiya Fatima", text: "Salam. I want gold-accented curtains for 8 windows in my Kano home. Do you ship outside Lagos?", time: "3:22 PM" },
-  { id: 8, sender: "ai", text: "Wa alaikum salam, Hajiya! 🌟 Yes ma, we ship nationwide. Our gold-accented luxury curtain sets start from ₦180,000 per window. For 8 windows, the total would be ₦1,440,000. We offer a 10% bulk discount, bringing it to ₦1,296,000. Kano delivery takes 7-10 working days. Shall I share fabric samples via WhatsApp? 🎨", time: "3:22 PM" },
-];
+// Real conversations arrive once WhatsApp and the AI engine are connected (M5/M6).
+// Never show canned or fake AI replies to real users.
+const preloadedMessages: Message[] = [];
 
 export default function ChatPage() {
   const [isAutopilot, setIsAutopilot] = useState(true);
@@ -94,10 +88,8 @@ export default function ChatPage() {
 
         {/* Status Text */}
         <div className="mt-3 text-center">
-          <p className="text-xs font-medium" style={{ color: isAutopilot ? "#00C9FF" : "#FFB300" }}>
-            {isAutopilot
-              ? "AI is handling all conversations"
-              : "You are in control — type to respond"}
+          <p className="text-xs font-medium" style={{ color: "#FFB300" }}>
+            AI chat not connected yet. This switch will work once WhatsApp is connected.
           </p>
         </div>
       </div>
@@ -108,6 +100,14 @@ export default function ChatPage() {
         style={{ maxHeight: "calc(100vh - 360px)", minHeight: "400px" }}
       >
         <div className="overflow-y-auto p-5 space-y-5" style={{ maxHeight: "calc(100vh - 420px)", minHeight: "340px" }}>
+          {messages.length === 0 && (
+            <EmptyState
+              title="AI chat not connected yet"
+              icon={MessageSquare}
+              message="Customer conversations will show here once your WhatsApp number is connected."
+              className="min-h-[300px]"
+            />
+          )}
           {messages.map((msg, index) => (
             <div
               key={msg.id}
@@ -161,12 +161,16 @@ export default function ChatPage() {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type a message to take over..."
-              className="glass-input flex-1 px-4 py-2.5 text-sm rounded-xl"
+              placeholder="Replying from here is coming soon"
+              disabled
+              className="glass-input flex-1 px-4 py-2.5 text-sm rounded-xl cursor-not-allowed opacity-60"
               style={{ color: "var(--text-primary)" }}
             />
             <button
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+              type="button"
+              disabled
+              aria-label="Sending is coming soon"
+              className="w-10 h-10 rounded-xl flex items-center justify-center cursor-not-allowed opacity-50"
               style={{
                 background: "linear-gradient(135deg, #00C9FF, #7B2FBE)",
                 color: "white",

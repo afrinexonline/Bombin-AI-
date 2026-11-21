@@ -1,7 +1,6 @@
 "use client";
 
-import { X, Smartphone, Shield, Wifi } from "lucide-react";
-import Image from "next/image";
+import { X, Smartphone, Shield, WifiOff, Clock } from "lucide-react";
 
 interface WhatsAppModalProps {
   isOpen: boolean;
@@ -65,34 +64,30 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
           </button>
         </div>
 
-        {/* QR Code Section */}
+        {/* Coming-soon Section (replaces the QR code until the real connection is built) */}
         <div className="px-6 py-6 flex flex-col items-center gap-4">
-          {/* QR Container */}
+          {/* Placeholder box, same size and frame as the future QR code */}
           <div
-            className="w-[200px] h-[200px] rounded-2xl p-2.5 flex items-center justify-center relative overflow-hidden"
+            className="w-[200px] h-[200px] rounded-2xl p-2.5 flex flex-col items-center justify-center gap-3 relative overflow-hidden"
             style={{
-              background: "white",
-              boxShadow: "0 0 30px rgba(37, 211, 102, 0.25), 0 0 60px rgba(37, 211, 102, 0.15)",
-              border: "2px solid rgba(37, 211, 102, 0.4)",
+              background: "rgba(37, 211, 102, 0.06)",
+              boxShadow: "0 0 30px rgba(37, 211, 102, 0.12)",
+              border: "2px dashed rgba(37, 211, 102, 0.35)",
             }}
           >
-            <Image
-              src="/qr-placeholder.png"
-              alt="WhatsApp QR Code"
-              width={180}
-              height={180}
-              className="rounded-lg object-contain"
-              priority
-            />
+            <Clock className="w-10 h-10" style={{ color: "#25D366" }} />
+            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              QR code coming soon
+            </span>
           </div>
 
-          {/* Headline & Instructions */}
+          {/* Headline & Explanation */}
           <div className="text-center space-y-1">
             <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              Scan with WhatsApp to link your business number
+              WhatsApp connection coming soon
             </p>
             <p className="text-xs text-white/50 leading-relaxed max-w-[320px] mx-auto">
-              Open WhatsApp &gt; Settings or Menu (⋮) &gt; Linked Devices &gt; Point camera at this QR code.
+              We&apos;re still building the secure link to WhatsApp. When it&apos;s ready you&apos;ll scan a QR code here to connect your business number.
             </p>
           </div>
 
@@ -104,12 +99,9 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
               border: "1px solid var(--border-pill)",
             }}
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#25D366" }}></span>
-              <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "#25D366" }}></span>
-            </span>
-            <span className="text-xs font-medium" style={{ color: "#25D366" }}>
-              Ready • Waiting for scan
+            <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--text-dimmed)" }}></span>
+            <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+              Not connected
             </span>
           </div>
 
@@ -128,15 +120,15 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
           style={{ borderTop: "1px solid var(--border-card)" }}
         >
           <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 shrink-0" style={{ color: "#25D366" }} />
+            <Shield className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-dimmed)" }} />
             <span className="text-[11px]" style={{ color: "var(--text-dimmed)" }}>
-              End-to-end encrypted
+              Nothing is linked yet
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Wifi className="w-3.5 h-3.5 shrink-0" style={{ color: "#25D366" }} />
+            <WifiOff className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-dimmed)" }} />
             <span className="text-[11px]" style={{ color: "var(--text-dimmed)" }}>
-              Direct TLS connection
+              No messages are read
             </span>
           </div>
         </div>

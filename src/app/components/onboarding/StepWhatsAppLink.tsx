@@ -1,24 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Smartphone, Shield } from "lucide-react";
-import { useOnboarding } from "../../context/OnboardingContext";
+import { Smartphone, Shield, Clock } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════
    Step 4 — WhatsApp Handshake Link
-   QR-based connection flow
+   The real QR connection is not built yet (M5), so this step
+   says so honestly. The page's own "Launch Dashboard" button
+   saves onboarding and goes to the dashboard.
    ═══════════════════════════════════════════════════ */
 
 export default function StepWhatsAppLink() {
-  const router = useRouter();
-  const { updateFields } = useOnboarding();
-
-  const handleConnect = () => {
-    updateFields({ completed: true, whatsappConnected: true });
-    router.push("/dashboard");
-  };
-
   return (
     <div className="space-y-6 text-center">
       {/* Section Title */}
@@ -59,57 +50,44 @@ export default function StepWhatsAppLink() {
         <ol className="list-decimal list-inside space-y-1.5" style={{ color: "var(--text-muted)" }}>
           <li>Open WhatsApp on your phone</li>
           <li>Go to <strong>Settings → Linked Devices</strong></li>
-          <li>Tap <strong>Link a Device</strong> and scan the QR code below</li>
-          <li>Your AI assistant will activate instantly</li>
+          <li>Tap <strong>Link a Device</strong> and scan the QR code</li>
+          <li>Your AI assistant starts replying to customers</li>
         </ol>
       </div>
 
-      {/* QR Code Placeholder */}
+      {/* Coming-soon panel (same place and size as the future QR code) */}
       <div className="flex justify-center py-4">
         <div
-          className="rounded-2xl p-6 inline-block"
+          className="rounded-2xl p-6 w-[248px] h-[248px] flex flex-col items-center justify-center gap-3"
           style={{
-            background: "rgba(255, 255, 255, 0.95)",
-            boxShadow: "0 0 60px rgba(0, 201, 255, 0.1)",
+            background: "rgba(37, 211, 102, 0.06)",
+            border: "2px dashed rgba(37, 211, 102, 0.35)",
+            boxShadow: "0 0 60px rgba(0, 201, 255, 0.08)",
           }}
         >
-          <Image
-            src="/qr-placeholder.png"
-            alt="WhatsApp QR"
-            width={200}
-            height={200}
-            className="rounded-lg"
-          />
+          <Clock size={40} style={{ color: "#25D366" }} />
+          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            WhatsApp connection coming soon
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            You can finish setup now and connect your number from the dashboard when it&apos;s ready.
+          </p>
         </div>
       </div>
 
       {/* Status Indicator */}
       <div className="flex items-center justify-center gap-3">
-        <span className="relative flex h-3 w-3">
-          <span
-            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-            style={{ background: "#25D366" }}
-          />
-          <span
-            className="relative inline-flex rounded-full h-3 w-3"
-            style={{ background: "#25D366" }}
-          />
-        </span>
+        <span
+          className="relative inline-flex rounded-full h-3 w-3"
+          style={{ background: "var(--text-dimmed)" }}
+        />
         <span
           className="text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
         >
-          Ready to connect...
+          Not connected yet
         </span>
       </div>
-
-      {/* Connect Button */}
-      <button
-        onClick={handleConnect}
-        className="btn-gradient px-8 py-3 text-sm font-semibold inline-flex items-center gap-2 cursor-pointer"
-      >
-        Isolate Link Check
-      </button>
 
       {/* Security Footer */}
       <div className="flex items-center justify-center gap-2 pt-2">
@@ -118,7 +96,7 @@ export default function StepWhatsAppLink() {
           className="text-xs"
           style={{ color: "var(--text-dimmed)" }}
         >
-          End-to-end encrypted connection
+          Nothing is linked until you scan the QR code yourself
         </span>
       </div>
     </div>

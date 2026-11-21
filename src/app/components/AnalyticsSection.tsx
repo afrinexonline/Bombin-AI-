@@ -16,50 +16,25 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import {
+  weeklySales as weeklyData,
+  monthlySales as monthlyData,
+  yearlySales as yearlyData,
+  closingCategories,
+  type ChartPoint,
+} from "../lib/dashboardData";
+import EmptyState from "./EmptyState";
+
+/** Axis label in Naira, e.g. ₦4k / ₦1.2M */
+const nairaTick = (v: number) =>
+  v >= 1_000_000 ? `₦${(v / 1_000_000).toFixed(1)}M` : `₦${(v / 1000).toFixed(0)}k`;
 
 type Period = "weekly" | "monthly" | "yearly";
 type ChartView = "area" | "bar";
 
-const weeklyData = [
-  { name: "Mon", sales: 4200, deals: 5 },
-  { name: "Tue", sales: 3800, deals: 3 },
-  { name: "Wed", sales: 6100, deals: 7 },
-  { name: "Thu", sales: 5400, deals: 6 },
-  { name: "Fri", sales: 7800, deals: 9 },
-  { name: "Sat", sales: 3200, deals: 2 },
-  { name: "Sun", sales: 2100, deals: 1 },
-];
+const doughnutData = closingCategories;
 
-const monthlyData = [
-  { name: "Wk 1", sales: 18400, deals: 12 },
-  { name: "Wk 2", sales: 24200, deals: 17 },
-  { name: "Wk 3", sales: 19800, deals: 14 },
-  { name: "Wk 4", sales: 28600, deals: 22 },
-];
-
-const yearlyData = [
-  { name: "Jan", sales: 42000, deals: 34 },
-  { name: "Feb", sales: 38000, deals: 28 },
-  { name: "Mar", sales: 51000, deals: 42 },
-  { name: "Apr", sales: 48000, deals: 38 },
-  { name: "May", sales: 55000, deals: 45 },
-  { name: "Jun", sales: 62000, deals: 52 },
-  { name: "Jul", sales: 58000, deals: 47 },
-  { name: "Aug", sales: 67000, deals: 55 },
-  { name: "Sep", sales: 71000, deals: 60 },
-  { name: "Oct", sales: 65000, deals: 53 },
-  { name: "Nov", sales: 78000, deals: 65 },
-  { name: "Dec", sales: 82000, deals: 70 },
-];
-
-const doughnutData = [
-  { name: "Deals Closed", value: 42, color: "#00C9FF" },
-  { name: "Pending", value: 28, color: "#7B2FBE" },
-  { name: "Follow-ups", value: 18, color: "#FFB300" },
-  { name: "Lost", value: 12, color: "#FF5252" },
-];
-
-const dataMap: Record<Period, typeof weeklyData> = {
+const dataMap: Record<Period, ChartPoint[]> = {
   weekly: weeklyData,
   monthly: monthlyData,
   yearly: yearlyData,
@@ -160,6 +135,14 @@ export default function AnalyticsSection() {
           className="w-full min-w-0 relative h-[300px] min-h-[300px] flex-1"
           style={{ width: "100%", height: "100%" }}
         >
+          {data.length === 0 && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <EmptyState
+                className="w-full h-full"
+                message="Sales and deals will show here once your WhatsApp assistant starts closing sales."
+              />
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
             {chartView === "area" ? (
               <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -15 }}>
@@ -175,7 +158,7 @@ export default function AnalyticsSection() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={nairaTick} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
@@ -208,7 +191,7 @@ export default function AnalyticsSection() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={nairaTick} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="sales" fill="url(#barSalesGrad)" radius={[4, 4, 0, 0]} animationDuration={800} />
                 <Bar dataKey="deals" fill="url(#barDealsGrad)" radius={[4, 4, 0, 0]} animationDuration={1000} />
@@ -241,6 +224,11 @@ export default function AnalyticsSection() {
           className="w-full min-w-0 relative h-[220px] min-h-[220px] flex-1 mb-4"
           style={{ width: "100%", height: "100%" }}
         >
+          {doughnutData.length === 0 && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <EmptyState className="w-full h-full" message="Deal outcomes will show here." />
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

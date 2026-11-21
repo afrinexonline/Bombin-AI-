@@ -18,7 +18,7 @@ export default function DashboardLayout({
     <DashboardGuard>
       <div className="min-h-screen relative" style={{ background: "var(--bg-body)" }}>
         {/* Ambient Background */}
-        <div className="bg-ambient" />
+        <div className="bg-ambient pointer-events-none z-0" />
 
         {/* Desktop Sidebar */}
         <Sidebar />

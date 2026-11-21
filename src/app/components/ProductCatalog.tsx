@@ -1,17 +1,8 @@
 "use client";
 
 import { Package, Tag } from "lucide-react";
-
-const products = [
-  { name: "Premium Chesterfield Sofa", category: "Furniture", price: "₦1,200,000" },
-  { name: "Consulting Inspection Fee", category: "Service", price: "₦50,000" },
-  { name: "Italian Marble Dining Set", category: "Furniture", price: "₦1,800,000" },
-  { name: "Gold-Accented Luxury Curtains", category: "Decor", price: "₦180,000/window" },
-  { name: "Smart Home Automation Kit", category: "Electronics", price: "₦750,000" },
-  { name: "Executive Office Desk", category: "Furniture", price: "₦420,000" },
-  { name: "Interior Design Package", category: "Service", price: "₦2,500,000" },
-  { name: "Venetian Glass Chandelier", category: "Lighting", price: "₦890,000" },
-];
+import { products } from "../lib/dashboardData";
+import EmptyState from "./EmptyState";
 
 export default function ProductCatalog() {
   return (
@@ -39,6 +30,13 @@ export default function ProductCatalog() {
 
       {/* Product List */}
       <div className="flex-1 space-y-1 overflow-y-auto">
+        {products.length === 0 && (
+          <EmptyState
+            title="No products yet"
+            icon={Package}
+            message="Your products and prices will appear here once catalogue setup is available."
+          />
+        )}
         {products.map((product, index) => (
           <div
             key={index}
@@ -72,12 +70,9 @@ export default function ProductCatalog() {
           {products.length} items in catalog
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#00E676" }} />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#00E676" }} />
-          </span>
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--text-dimmed)" }} />
           <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-            Synced with WhatsApp catalog
+            WhatsApp catalogue sync coming soon
           </span>
         </div>
       </div>

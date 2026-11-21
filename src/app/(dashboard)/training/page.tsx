@@ -3,39 +3,30 @@
 import { Brain, Upload, Sparkles, Send, BookOpen, Lightbulb, MessageSquare } from "lucide-react";
 import { useState } from "react";
 
+/*
+ * Training is not built yet: no module is trained, and saving/uploading
+ * are switched off and labelled "coming soon". Nothing pretends to save.
+ */
 const trainingModules = [
   {
     title: "Objection Handling",
     description: "Teach your AI how to respond to common pricing and competitor objections.",
     icon: MessageSquare,
-    status: "Trained",
-    lastUpdate: "2 hours ago",
   },
   {
     title: "Product Knowledge",
     description: "Upload FAQs, feature lists, and product docs for accurate responses.",
     icon: BookOpen,
-    status: "Needs Update",
-    lastUpdate: "3 days ago",
   },
   {
     title: "Closing Techniques",
     description: "Define your preferred closing styles — urgency, value-based, or consultative.",
     icon: Lightbulb,
-    status: "Trained",
-    lastUpdate: "1 day ago",
   },
 ];
 
 export default function TrainingPage() {
   const [vibeText, setVibeText] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSubmit = () => {
-    if (!vibeText.trim()) return;
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 2000);
-  };
 
   return (
     <>
@@ -71,13 +62,10 @@ export default function TrainingPage() {
                   <Icon className="w-4.5 h-4.5 text-cyan" />
                 </div>
                 <span
-                  className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                    mod.status === "Trained"
-                      ? "text-success bg-success/10"
-                      : "text-warning bg-warning/10"
-                  }`}
+                  className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                  style={{ color: "var(--text-muted)", background: "var(--bg-pill)" }}
                 >
-                  {mod.status}
+                  Coming soon
                 </span>
               </div>
               <div>
@@ -89,7 +77,7 @@ export default function TrainingPage() {
                 </p>
               </div>
               <p className="text-[10px] mt-auto" style={{ color: "var(--text-dimmed)" }}>
-                Updated {mod.lastUpdate}
+                Not set up yet
               </p>
             </div>
           );
@@ -119,26 +107,21 @@ export default function TrainingPage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={handleSubmit}
-            disabled={isSubmitted}
-            className={`btn-gradient px-5 py-2.5 flex items-center gap-2 text-xs font-medium ${
-              isSubmitted ? "opacity-70" : ""
-            }`}
+            type="button"
+            disabled
+            className="btn-gradient px-5 py-2.5 flex items-center gap-2 text-xs font-medium cursor-not-allowed opacity-50"
           >
-            {isSubmitted ? (
-              <><Sparkles className="w-3.5 h-3.5 animate-spin" /> Training...</>
-            ) : (
-              <><Send className="w-3.5 h-3.5" /> Save Vibe</>
-            )}
+            <Send className="w-3.5 h-3.5" /> Saving coming soon
           </button>
-          <label
-            className="glass-pill px-4 py-2.5 flex items-center gap-2 text-xs cursor-pointer hover:opacity-80 transition-all"
+          <button
+            type="button"
+            disabled
+            className="glass-pill px-4 py-2.5 flex items-center gap-2 text-xs cursor-not-allowed opacity-60"
             style={{ color: "var(--text-muted)" }}
           >
             <Upload className="w-3.5 h-3.5" />
-            Upload Chat History
-            <input type="file" className="hidden" accept=".txt,.csv,.json" />
-          </label>
+            Upload coming soon
+          </button>
         </div>
       </div>
     </>

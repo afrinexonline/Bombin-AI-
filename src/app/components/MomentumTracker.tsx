@@ -1,8 +1,7 @@
 "use client";
 
-import { dealMomentum } from "../lib/mockData";
-
-const deals = dealMomentum;
+import { deals } from "../lib/dashboardData";
+import EmptyState from "./EmptyState";
 
 export default function MomentumTracker() {
   return (
@@ -16,11 +15,17 @@ export default function MomentumTracker() {
             {deals.length} active conversations
           </p>
         </div>
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
-        </span>
+        {deals.length > 0 && (
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+          </span>
+        )}
       </div>
+
+      {deals.length === 0 && (
+        <EmptyState message="Deals will appear here once customers start chatting with you on WhatsApp." />
+      )}
 
       <div className="flex flex-col gap-2 overflow-y-auto max-h-[420px] pr-1 flex-1">
         {deals.map((deal, i) => (

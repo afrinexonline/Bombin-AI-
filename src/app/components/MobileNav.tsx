@@ -19,7 +19,7 @@ export default function MobileNav() {
 
   const getIsActive = (href: string) => {
     if (href === "/dashboard") {
-      return pathname === "/" || pathname === "/dashboard" || pathname === "/demo-dashboard";
+      return pathname === "/" || pathname === "/dashboard";
     }
     return pathname.startsWith(href);
   };
@@ -28,20 +28,8 @@ export default function MobileNav() {
     <nav className="mobile-nav fixed bottom-0 left-0 right-0 z-50 lg:hidden flex items-center justify-around py-2 px-2">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isDemo = pathname.startsWith("/demo-dashboard");
-        const isActive = isDemo
-          ? (item.href === "/dashboard" && pathname === "/demo-dashboard") ||
-            (item.href !== "/dashboard" && pathname.startsWith("/demo-dashboard" + item.href.replace("/dashboard", "").replace(/^\//, "/")))
-          : getIsActive(item.href);
-        // Remap hrefs for demo context
-        let href = item.href;
-        if (isDemo) {
-          if (item.href === "/dashboard") {
-            href = "/demo-dashboard";
-          } else {
-            href = "/demo-dashboard" + item.href;
-          }
-        }
+        const isActive = getIsActive(item.href);
+        const href = item.href;
         return (
           <Link
             key={item.id}

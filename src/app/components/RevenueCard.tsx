@@ -1,6 +1,6 @@
 "use client";
 
-import { revenueStats } from "../lib/mockData";
+import { statCards as revenueStats } from "../lib/dashboardData";
 
 const delayClasses = ["delay-1", "delay-2", "delay-3", "delay-4"];
 
@@ -22,9 +22,11 @@ export default function RevenueCard() {
               >
                 <Icon className="w-5 h-5 text-cyan" />
               </div>
-              <span className="text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
-                {stat.change}
-              </span>
+              {stat.change && (
+                <span className="text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
+                  {stat.change}
+                </span>
+              )}
             </div>
             <p
               className="text-xs mb-1 uppercase tracking-wider"
@@ -32,14 +34,20 @@ export default function RevenueCard() {
             >
               {stat.label}
             </p>
-            <p
-              className={`text-3xl font-bold tracking-tight stat-number ${
-                stat.label === "Revenue Influenced" ? "glow-number" : ""
-              }`}
-              style={stat.label !== "Revenue Influenced" ? { color: "var(--text-primary)" } : {}}
-            >
-              {stat.value}
-            </p>
+            {stat.value ? (
+              <p
+                className={`text-3xl font-bold tracking-tight stat-number ${
+                  stat.label === "Revenue Influenced" ? "glow-number" : ""
+                }`}
+                style={stat.label !== "Revenue Influenced" ? { color: "var(--text-primary)" } : {}}
+              >
+                {stat.value}
+              </p>
+            ) : (
+              <p className="text-base font-medium pt-2" style={{ color: "var(--text-dimmed)" }}>
+                No data yet
+              </p>
+            )}
           </div>
         );
       })}
