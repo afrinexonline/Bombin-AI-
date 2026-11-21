@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /* ═══════════════════════════════════════════════════
    BOMBIN AI — Supabase Client
@@ -10,17 +10,43 @@ import { createClient } from "@supabase/supabase-js";
    • onboarding   — wizard completion state
    ═══════════════════════════════════════════════════ */
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.warn("Bombin AI Warning: Supabase environment variables are missing from .env.local");
+// NEXT_PUBLIC_* values must be read with these exact names so Next.js can
+// bake them into the browser bundle at build time.
+export const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
+  .replace(/['"]/g, "")
+  .trim()
+  .replace(/\/$/, "");
+export const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "")
+  .replace(/['"]/g, "")
+  .trim();
+
+const missing = [
+  !supabaseUrl && "NEXT_PUBLIC_SUPABASE_URL",
+  !supabaseAnonKey && "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+].filter(Boolean);
+
+const missingMessage =
+  `Bombin AI: Supabase is not configured. Missing setting(s): ${missing.join(", ")}. ` +
+  "Add them to .env.local (local) and to the Vercel project settings (live).";
+
+function buildClient(): SupabaseClient {
+  if (missing.length === 0) {
+    return createClient(supabaseUrl, supabaseAnonKey);
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(missingMessage);
+  }
+  // Development: say clearly what is wrong, and fail with the same message
+  // the moment anything actually tries to use Supabase.
+  console.error(missingMessage);
+  return new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error(missingMessage);
+    },
+  });
 }
 
-const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
-const supabaseUrl = rawUrl.replace(/['"]/g, '').trim().replace(/\/$/, "");
-
-const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
-const supabaseAnonKey = rawKey.replace(/['"]/g, '').trim();
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = buildClient();
 
 /* ── Type Definitions ──────────────────────────────── */
 
