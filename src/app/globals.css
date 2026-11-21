@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `light:` utilities apply when the app's light theme is on (html[data-theme="light"]). */
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
 /* ═══════════════════════════════════════════════════
    BOMBIN AI — Liquid Glass Design System v2
    Dark + Light Theme with CSS custom properties

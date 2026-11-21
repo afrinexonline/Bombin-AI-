@@ -1,3 +1,5 @@
+import OnboardingGuard from "../components/OnboardingGuard";
+
 /* ═══════════════════════════════════════════════════
    BOMBIN AI — Onboarding Layout
    Minimal full-screen centered layout for the wizard
@@ -15,7 +17,7 @@ export default function OnboardingLayout({
 
       {/* Centered Container */}
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center">
-        {children}
+        <OnboardingGuard>{children}</OnboardingGuard>
       </div>
     </div>
   );

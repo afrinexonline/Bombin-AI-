@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
+import { confirmRedirectUrl, isEmailConfirmed, markEmailSent, savePendingEmail } from "./lib/authEmail";
+import ResendEmailButton from "./components/auth/ResendEmailButton";
 import {
   Zap,
   ArrowRight,
@@ -121,14 +123,25 @@ export default function LandingPage() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
+  // True when the email/password are right but the email is not confirmed yet.
+  const [loginNeedsConfirm, setLoginNeedsConfirm] = useState(false);
 
   // Sign Up States
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState<boolean>(false);
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpError, setSignUpError] = useState<string | null>(null);
-  const [signUpSuccess, setSignUpSuccess] = useState<string | null>(null);
   const [signUpLoading, setSignUpLoading] = useState(false);
+
+  // Links like /?signup=1 or /?signin=1 (from the email screens) open the right pop-up.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("signup") === "1") setIsSignUpModalOpen(true);
+    else if (params.get("signin") === "1") setIsLoginModalOpen(true);
+    if (params.has("signup") || params.has("signin")) {
+      window.history.replaceState(window.history.state, "", window.location.pathname);
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +150,7 @@ export default function LandingPage() {
     }
     setLoginLoading(true);
     setLoginError(null);
+    setLoginNeedsConfirm(false);
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
@@ -144,6 +158,11 @@ export default function LandingPage() {
       });
       if (authError) throw authError;
       if (!authData?.session) throw new Error("No session returned");
+      if (!isEmailConfirmed(authData.session.user)) {
+        // Belt and braces: never let an unconfirmed email in.
+        await supabase.auth.signOut();
+        throw new Error("Email not confirmed");
+      }
       setIsLoginModalOpen(false);
       router.push("/dashboard");
     } catch (err: any) {
@@ -152,7 +171,8 @@ export default function LandingPage() {
       if (/invalid login credentials/i.test(msg)) {
         setLoginError("Wrong email or password. Please try again.");
       } else if (/email not confirmed/i.test(msg)) {
-        setLoginError("Please confirm your email address first, then sign in.");
+        setLoginNeedsConfirm(true);
+        setLoginError("Please confirm your email first. Check your inbox (and spam) for our link, or send a new one below.");
       } else if (/fetch/i.test(msg)) {
         setLoginError("Could not reach the server. Check your internet connection and try again.");
       } else {
@@ -170,27 +190,39 @@ export default function LandingPage() {
     }
     setSignUpLoading(true);
     setSignUpError(null);
-    setSignUpSuccess(null);
+
+    // Same screen for a new email and an email that already has an account,
+    // so nobody can find out which emails are registered.
+    const goToCheckEmail = () => {
+      savePendingEmail(signUpEmail);
+      markEmailSent();
+      setIsSignUpModalOpen(false);
+      router.push("/check-email");
+    };
+
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: signUpEmail,
         password: signUpPassword,
+        options: { emailRedirectTo: confirmRedirectUrl() },
       });
       if (authError) throw authError;
 
-      if (authData.user && !authData.session) {
-        setSignUpSuccess("Account created! Please check your email to verify your account.");
+      // "Confirm email" ON: no session yet, the user must click the link first.
+      if (!authData.session) {
+        goToCheckEmail();
         return;
       }
 
+      // "Confirm email" OFF: signed in straight away, same as before.
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("bombin-onboarding");
       }
       setIsSignUpModalOpen(false);
       router.push("/onboarding");
     } catch (err: any) {
-      if (err.message?.includes("User already registered")) {
-        setSignUpError("This email is already registered. Please click 'Sign In' instead.");
+      if (/already registered|already exists/i.test(err?.message ?? "") || err?.code === "user_already_exists") {
+        goToCheckEmail();
       } else {
         console.error("Supabase Auth signUp failed:", err);
         const isFetchError = err.message?.includes("Failed to fetch") || err.message?.includes("fetch");
@@ -1086,6 +1118,7 @@ export default function LandingPage() {
               {loginError && (
                 <p className="text-xs text-rose-500 text-center mt-2">{loginError}</p>
               )}
+              {loginNeedsConfirm && <ResendEmailButton email={loginEmail} tone="dark" />}
 
               <button
                 type="submit"
@@ -1170,11 +1203,6 @@ export default function LandingPage() {
               {signUpError && (
                 <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-200 text-xs text-center backdrop-blur-md shadow-[0_4px_12px_rgba(244,63,94,0.15)] mt-2">
                   {signUpError}
-                </div>
-              )}
-              {signUpSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-xs text-center backdrop-blur-md shadow-[0_4px_12px_rgba(52,211,153,0.15)] mt-2">
-                  {signUpSuccess}
                 </div>
               )}
 

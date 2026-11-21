@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
+import { isEmailConfirmed } from "../lib/authEmail";
 
 export default function DashboardGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -19,6 +20,12 @@ export default function DashboardGuard({ children }: { children: React.ReactNode
         
         if (!session) {
           router.replace("/");
+          return;
+        }
+
+        // Only confirmed emails (or Google accounts) may use the dashboard.
+        if (!isEmailConfirmed(session.user)) {
+          router.replace("/check-email");
           return;
         }
 
