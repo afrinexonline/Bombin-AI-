@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
-import { confirmRedirectUrl, isEmailConfirmed, markEmailSent, savePendingEmail } from "./lib/authEmail";
+import { clearLocalLogin, confirmRedirectUrl, isEmailConfirmed, markEmailSent, savePendingEmail } from "./lib/authEmail";
 import ResendEmailButton from "./components/auth/ResendEmailButton";
 import {
   Zap,
@@ -135,6 +135,14 @@ export default function LandingPage() {
 
   // Links like /?signup=1 or /?signin=1 (from the email screens) open the right pop-up.
   useEffect(() => {
+    // Safety net: if Supabase sent an email link to the home page (it does this when
+    // the link's address is not on its allowed list), pass it on to the confirmation page.
+    const hash = window.location.hash;
+    if (/(^|[#&])(access_token|error_code)=/.test(hash) && /type=signup|error_code=/.test(hash)) {
+      window.location.replace(`/auth/confirm${hash}`);
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     if (params.get("signup") === "1") setIsSignUpModalOpen(true);
     else if (params.get("signin") === "1") setIsLoginModalOpen(true);
@@ -152,6 +160,8 @@ export default function LandingPage() {
     setLoginError(null);
     setLoginNeedsConfirm(false);
     try {
+      // Start clean: forget any old login saved in this browser first.
+      await clearLocalLogin();
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
@@ -160,7 +170,7 @@ export default function LandingPage() {
       if (!authData?.session) throw new Error("No session returned");
       if (!isEmailConfirmed(authData.session.user)) {
         // Belt and braces: never let an unconfirmed email in.
-        await supabase.auth.signOut();
+        await clearLocalLogin();
         throw new Error("Email not confirmed");
       }
       setIsLoginModalOpen(false);
@@ -201,6 +211,9 @@ export default function LandingPage() {
     };
 
     try {
+      // Start clean: an old login left in this browser (e.g. from a deleted
+      // account) must never carry over into a new sign-up.
+      await clearLocalLogin();
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: signUpEmail,
         password: signUpPassword,

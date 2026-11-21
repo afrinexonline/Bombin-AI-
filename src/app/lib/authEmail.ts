@@ -1,11 +1,44 @@
-import type { User } from "@supabase/supabase-js";
+import { isAuthRetryableFetchError, type User } from "@supabase/supabase-js";
+import { supabase } from "./supabaseClient";
 
 /*
  * Shared helpers for email confirmation (Step 3).
  * Works whether "Confirm email" is OFF or ON in Supabase.
  */
 
-/** Where the link in the confirmation email sends people (same site: bombinai.com or localhost). */
+/**
+ * Ask Supabase itself who is logged in, instead of trusting the login saved in
+ * this browser (which can be stale, e.g. for an account that was deleted).
+ * - user: the real, current user, or null when logged out / deleted / invalid.
+ * - offline: true when Supabase could not be reached (we can't tell either way).
+ * A login Supabase rejects is removed from this browser.
+ */
+export async function getVerifiedUser(): Promise<{ user: User | null; offline: boolean }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { user: null, offline: false };
+
+  const { data, error } = await supabase.auth.getUser();
+  if (!error && data.user) return { user: data.user, offline: false };
+
+  if (error && isAuthRetryableFetchError(error)) {
+    return { user: null, offline: true };
+  }
+  // Supabase says this login is no good (user deleted, session ended, bad token).
+  await clearLocalLogin();
+  return { user: null, offline: false };
+}
+
+/** Forget any login saved in this browser (used before sign-up / sign-in). */
+export async function clearLocalLogin() {
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch {
+    /* nothing saved, or offline: nothing more to do */
+  }
+}
+
+/** Where the link in the confirmation email sends people: the site the person is on
+ * right now (https://www.bombinai.com live, or localhost), never a hard-coded address. */
 export function confirmRedirectUrl(): string {
   if (typeof window === "undefined") return "";
   return `${window.location.origin}/auth/confirm`;

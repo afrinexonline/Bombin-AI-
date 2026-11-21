@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
-import { isEmailConfirmed } from "../lib/authEmail";
+import { getVerifiedUser, isEmailConfirmed } from "../lib/authEmail";
 
 export default function DashboardGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,17 +14,18 @@ export default function DashboardGuard({ children }: { children: React.ReactNode
 
     async function checkAuthAndOnboarding() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        // Ask Supabase who this really is (a stale or deleted login counts as logged out).
+        const { user } = await getVerifiedUser();
+
         if (!isMounted) return;
-        
-        if (!session) {
+
+        if (!user) {
           router.replace("/");
           return;
         }
 
         // Only confirmed emails (or Google accounts) may use the dashboard.
-        if (!isEmailConfirmed(session.user)) {
+        if (!isEmailConfirmed(user)) {
           router.replace("/check-email");
           return;
         }
@@ -32,7 +33,7 @@ export default function DashboardGuard({ children }: { children: React.ReactNode
         const { data: profile } = await supabase
           .from("profiles")
           .select("current_step")
-          .eq("id", session.user.id)
+          .eq("id", user.id)
           .single();
 
         if (!isMounted) return;

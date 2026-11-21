@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Link2Off } from "lucide-react";
-import { supabase } from "../../lib/supabaseClient";
-import { clearPendingEmail, isEmailConfirmed, readPendingEmail } from "../../lib/authEmail";
+import { clearPendingEmail, getVerifiedUser, isEmailConfirmed, readPendingEmail } from "../../lib/authEmail";
 import AuthShell, { authLink, authText, authTitle } from "../../components/auth/AuthShell";
 import ResendEmailButton from "../../components/auth/ResendEmailButton";
 
@@ -39,9 +38,10 @@ export default function ConfirmEmailPage() {
     (async () => {
       let confirmed = false;
       try {
-        // Waits until the client has finished reading the link.
-        const { data: { session } } = await supabase.auth.getSession();
-        confirmed = !!session && isEmailConfirmed(session.user);
+        // Waits until the client has finished reading the link, then asks
+        // Supabase directly whether this user really is confirmed.
+        const { user } = await getVerifiedUser();
+        confirmed = isEmailConfirmed(user);
       } catch {
         confirmed = false;
       }

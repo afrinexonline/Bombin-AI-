@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
-import { clearPendingEmail, isEmailConfirmed, readPendingEmail } from "../lib/authEmail";
+import { clearLocalLogin, clearPendingEmail, getVerifiedUser, isEmailConfirmed, readPendingEmail } from "../lib/authEmail";
 import AuthShell, { authLink, authText, authTitle } from "../components/auth/AuthShell";
 import ResendEmailButton from "../components/auth/ResendEmailButton";
 
@@ -24,14 +23,16 @@ export default function CheckEmailPage() {
     (async () => {
       let address = readPendingEmail();
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          if (isEmailConfirmed(session.user)) {
-            // Already confirmed: nothing to do here.
+        // Ask Supabase, never the saved login: a stale login from a deleted
+        // account must not skip this screen.
+        const { user } = await getVerifiedUser();
+        if (user) {
+          if (isEmailConfirmed(user)) {
+            // Really confirmed: nothing to do here.
             router.replace("/onboarding");
             return;
           }
-          address = session.user.email ?? address;
+          address = user.email ?? address;
         }
       } catch {
         /* no session: just show the screen */
@@ -47,11 +48,7 @@ export default function CheckEmailPage() {
 
   const useDifferentEmail = async () => {
     clearPendingEmail();
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      /* not signed in: fine */
-    }
+    await clearLocalLogin();
     router.push("/?signup=1");
   };
 
