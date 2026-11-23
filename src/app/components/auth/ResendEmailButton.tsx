@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RotateCw } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import {
@@ -12,6 +12,7 @@ import {
   RESEND_WAIT_SECONDS,
 } from "../../lib/authEmail";
 import { authInput } from "./AuthShell";
+import { AUTH_MSG, isOffline, isRateLimited, waitUntilOnline, withTimeout } from "../../lib/authMessages";
 
 /*
  * "Resend email" button with a visible 60-second wait.
@@ -47,39 +48,47 @@ export default function ResendEmailButton({
     return () => clearInterval(timer);
   }, [secondsLeft]);
 
+  // Step 3D: one email per press, never a second one sent by ourselves.
+  const sendingRef = useRef(false);
+
   const handleResend = async () => {
-    if (!targetEmail || secondsLeft > 0 || sending) return;
+    if (!targetEmail || secondsUntilResend() > 0 || sendingRef.current) return;
+    sendingRef.current = true;
     setSending(true);
     setMessage(null);
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: targetEmail,
-        options: { emailRedirectTo: confirmRedirectUrl() },
-      });
-      const msg = error?.message ?? "";
-      if (error && (error.status === 429 || /security purposes|rate limit|too many/i.test(msg))) {
-        markEmailSent();
-        setSecondsLeft(RESEND_WAIT_SECONDS);
-        setMessage({ kind: "error", text: "Please wait a little before asking for another email." });
+      // Offline before sending: nothing has gone out yet, so wait quietly and try once.
+      if (isOffline() && !(await waitUntilOnline())) {
+        setMessage({ kind: "error", text: AUTH_MSG.offline });
         return;
       }
-      if (error && /fetch|network/i.test(msg)) {
-        setMessage({ kind: "error", text: "Could not reach the server. Check your internet connection and try again." });
-        return;
+      let error: { status?: number; message?: string } | null = null;
+      try {
+        ({ error } = await withTimeout(
+          supabase.auth.resend({
+            type: "signup",
+            email: targetEmail,
+            options: { emailRedirectTo: confirmRedirectUrl() },
+          }),
+        ));
+      } catch (err) {
+        error = err as Error; // lost reply or timeout: it may have gone through
       }
-      // Success, or any other answer: same message, so we never reveal account details.
       markEmailSent();
+      setSecondsLeft(RESEND_WAIT_SECONDS);
+      if (isRateLimited(error)) {
+        setMessage({ kind: "error", text: AUTH_MSG.waitBeforeResend });
+        return;
+      }
+      // Success, a lost reply or any other answer: same message, so we never reveal account details.
       markLinkKind("signup");
       savePendingEmail(targetEmail);
-      setSecondsLeft(RESEND_WAIT_SECONDS);
       setMessage({
         kind: "ok",
-        text: "If this email still needs confirming, a new link is on its way. Check your inbox and spam.",
+        text: "If this email still needs confirming, a new link is on its way. Check your inbox and spam. Only the newest link works.",
       });
-    } catch {
-      setMessage({ kind: "error", text: "Could not reach the server. Check your internet connection and try again." });
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   };

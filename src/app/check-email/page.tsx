@@ -6,6 +6,7 @@ import { Mail } from "lucide-react";
 import { clearLocalLogin, clearPendingEmail, getVerifiedUser, isEmailConfirmed, readPendingEmail } from "../lib/authEmail";
 import AuthShell, { authLink, authText, authTitle } from "../components/auth/AuthShell";
 import ResendEmailButton from "../components/auth/ResendEmailButton";
+import BrandLoader from "../components/auth/BrandLoader";
 
 /*
  * "Check your email" screen (Step 3.3).
@@ -52,6 +53,10 @@ export default function CheckEmailPage() {
     router.push("/?signup=1");
   };
 
+  // Step 3D: brand loader while checking, so this screen never flashes before
+  // sending an already-confirmed person on to onboarding.
+  if (!ready) return <BrandLoader label="Checking your account..." />;
+
   return (
     <AuthShell>
       <div className="flex flex-col items-center gap-5">
@@ -76,7 +81,7 @@ export default function CheckEmailPage() {
           <strong className="text-white/80 light:text-[#233067]">Promotions</strong> folder. It comes from Bombin AI.
         </div>
 
-        <div className="w-full">{ready && <ResendEmailButton email={email} />}</div>
+        <div className="w-full"><ResendEmailButton email={email} /></div>
 
         <div className="flex flex-col items-center gap-2 pt-1">
           <button type="button" onClick={useDifferentEmail} style={{ touchAction: "manipulation" }} className={authLink}>

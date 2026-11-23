@@ -4,7 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
-import { clearLocalLogin, isEmailConfirmed, markEmailSent, markLinkKind, savePendingEmail } from "./lib/authEmail";
+import { clearLocalLogin, clearLocalLoginIfAny, isEmailConfirmed, markEmailSent, markLinkKind, savePendingEmail } from "./lib/authEmail";
+import { AUTH_MSG, isOffline, mayHaveReachedServer, networkMessage, waitUntilOnline, withTimeout } from "./lib/authMessages";
+import { useNavTransition } from "./components/auth/NavTransition";
+import PasswordField from "./components/auth/PasswordField";
 import { isValidEmailFormat, normalizeEmail } from "./lib/emailChecks";
 import ResendEmailButton from "./components/auth/ResendEmailButton";
 import EmailField from "./components/auth/EmailField";
@@ -120,6 +123,8 @@ export default function LandingPage() {
   const [autopilot, setAutopilot]   = useState<boolean>(true);
   const [chartMetric, setChartMetric] = useState<"revenue" | "conversion">("revenue");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  // Brand loader between pages (sits above the whole app, so the landing page never flashes).
+  const { go } = useNavTransition();
   const [faqActiveIndex, setFaqActiveIndex] = useState<number | null>(null);
 
   // Log In States
@@ -147,7 +152,7 @@ export default function LandingPage() {
     // the link's address is not on its allowed list), pass it on to the confirmation page.
     const hash = window.location.hash;
     // (A tiny script in layout.tsx normally does this before anything is drawn.)
-    if (/(^|[#&])(access_token|error_code)=/.test(hash)) {
+    if (/(^|[#&])(access_token|error_code|error)=/.test(hash)) {
       window.location.replace(`${/type=recovery/.test(hash) ? "/reset-password" : "/auth/confirm"}${hash}`);
       return;
     }
@@ -162,23 +167,31 @@ export default function LandingPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loginLoading) return;
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("bombin-onboarding");
     }
     setLoginError(null);
     setLoginNeedsConfirm(false);
     if (!isValidEmailFormat(loginEmail)) {
-      setLoginError("Please enter a full email address, like name@gmail.com.");
+      setLoginError(AUTH_MSG.emailFormat);
       return;
     }
     setLoginLoading(true);
     try {
-      // Start clean: forget any old login saved in this browser first.
-      await clearLocalLogin();
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: normalizeEmail(loginEmail),
-        password: loginPassword,
-      });
+      // Offline before sending: wait quietly for the connection and try once.
+      if (isOffline() && !(await waitUntilOnline())) {
+        setLoginError(AUTH_MSG.offline);
+        return;
+      }
+      // Logging in replaces any old login saved in this browser, so no separate
+      // "log out first" trip is needed when it works (Step 3D speed fix).
+      const { data: authData, error: authError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: normalizeEmail(loginEmail),
+          password: loginPassword,
+        }),
+      );
       if (authError) throw authError;
       if (!authData?.session) throw new Error("No session returned");
       if (!isEmailConfirmed(authData.session.user)) {
@@ -186,20 +199,22 @@ export default function LandingPage() {
         await clearLocalLogin();
         throw new Error("Email not confirmed");
       }
-      setIsLoginModalOpen(false);
-      router.push("/dashboard");
+      // Brand loader first (the pop-up stays hidden behind it), then straight to the dashboard.
+      go("/dashboard", "Opening your dashboard...");
     } catch (err: any) {
       // Never let a failed login reach any dashboard. Stay on the form and explain.
+      // A failed log-in must not leave an older login behind either.
+      void clearLocalLoginIfAny().catch(() => {});
       const msg: string = err?.message ?? "";
       if (/invalid login credentials/i.test(msg)) {
-        setLoginError("Wrong email or password. Please try again.");
+        setLoginError(AUTH_MSG.wrongLogin);
       } else if (/email not confirmed/i.test(msg)) {
         setLoginNeedsConfirm(true);
-        setLoginError("Please confirm your email first. Check your inbox (and spam) for our link, or send a new one below.");
-      } else if (/fetch/i.test(msg)) {
-        setLoginError("Could not reach the server. Check your internet connection and try again.");
+        setLoginError(AUTH_MSG.confirmFirst);
+      } else if (mayHaveReachedServer(err)) {
+        setLoginError(networkMessage(AUTH_MSG.loginFailed));
       } else {
-        setLoginError("Log-in failed. Please try again.");
+        setLoginError(AUTH_MSG.loginFailed);
       }
     } finally {
       setLoginLoading(false);
@@ -208,6 +223,7 @@ export default function LandingPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (signUpLoading) return;
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("bombin-onboarding");
     }
@@ -227,32 +243,43 @@ export default function LandingPage() {
       savePendingEmail(normalizeEmail(signUpEmail));
       markEmailSent();
       markLinkKind("signup");
-      setIsSignUpModalOpen(false);
-      router.push("/check-email");
+      go("/check-email", "Sending your confirmation email...");
     };
 
     try {
+      // Offline before sending: nothing has gone out yet, so wait quietly and try once.
+      if (isOffline() && !(await waitUntilOnline())) {
+        setSignUpError(AUTH_MSG.offline);
+        return;
+      }
+
       // Start clean: an old login left in this browser (e.g. from a deleted
       // account) must never carry over into a new sign-up.
-      await clearLocalLogin();
+      await clearLocalLoginIfAny();
 
       // Sign-up goes through our server, which checks the email (format,
       // throwaway domains, can it receive mail) before creating the account.
       let res: Response;
       try {
-        res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: normalizeEmail(signUpEmail), password: signUpPassword }),
-        });
+        res = await withTimeout(
+          fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: normalizeEmail(signUpEmail), password: signUpPassword }),
+          }),
+          20000,
+        );
       } catch {
-        setSignUpError("Could not reach the server. Check your internet connection and try again.");
+        // The request left the browser but the answer got lost: the account and the
+        // email may already exist. Never send again by ourselves; show "Check your email"
+        // (it has its own resend button with a timer).
+        goToCheckEmail();
         return;
       }
       const data = await res.json().catch(() => null);
 
       if (!res.ok || !data || data.error) {
-        setSignUpError(data?.error ?? "We couldn't create your account right now. Please try again.");
+        setSignUpError(data?.error ?? AUTH_MSG.signupFailed);
         return;
       }
 
@@ -271,11 +298,10 @@ export default function LandingPage() {
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("bombin-onboarding");
       }
-      setIsSignUpModalOpen(false);
-      router.push("/onboarding");
+      go("/onboarding", "Getting things ready...");
     } catch {
       // Explicitly halt: do NOT close the modal, do NOT redirect to /onboarding.
-      setSignUpError("Something went wrong. Please try again.");
+      setSignUpError(AUTH_MSG.signupFailed);
     } finally {
       setSignUpLoading(false);
     }
@@ -292,7 +318,7 @@ export default function LandingPage() {
       if (error) throw error;
     } catch {
       // Stay on the form; never fall through to a dashboard.
-      setLoginError("Google log-in is not available right now. Please use your email and password.");
+      setLoginError(AUTH_MSG.googleUnavailable);
     }
   };
 
@@ -1121,9 +1147,14 @@ export default function LandingPage() {
             <h2 className="text-2xl font-bold mb-6 text-center text-white">Welcome Back</h2>
             <form onSubmit={handleSignIn} className="space-y-4">
               <EmailField id="login-email" value={loginEmail} onChange={setLoginEmail} tone="dark" />
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="login-password" className="block text-xs font-semibold text-white/40">Password</label>
+              <PasswordField
+                id="login-password"
+                label="Password"
+                value={loginPassword}
+                onChange={setLoginPassword}
+                autoComplete="current-password"
+                tone="dark"
+                labelAction={
                   <button
                     type="button"
                     onClick={() => router.push("/forgot-password")}
@@ -1132,18 +1163,8 @@ export default function LandingPage() {
                   >
                     Forgot password?
                   </button>
-                </div>
-                <input
-                  id="login-password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00C9FF]/50 transition-colors"
-                />
-              </div>
+                }
+              />
 
               {/* Continue with Google button inside Sign-In modal */}
               <button
@@ -1170,9 +1191,12 @@ export default function LandingPage() {
                 type="submit"
                 disabled={loginLoading}
                 style={{ touchAction: "manipulation" }}
-                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full bg-gradient-to-r from-[#01C4FA] to-[#233067] text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_18px_rgba(1,196,250,0.35)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                {loginLoading ? "Logging in..." : "Log In"}
+                <span className="flex items-center justify-center gap-2">
+                  {loginLoading && <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-hidden="true" />}
+                  {loginLoading ? "Logging in..." : "Log In"}
+                </span>
               </button>
             </form>
             <p className="text-xs text-center text-white/30 mt-6">
@@ -1183,7 +1207,7 @@ export default function LandingPage() {
                   setIsSignUpModalOpen(true);
                 }}
                 style={{ touchAction: "manipulation" }}
-                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#00C9FF] hover:underline bg-transparent border-none"
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#01C4FA] hover:underline bg-transparent border-none"
               >
                 Start Selling
               </button>
@@ -1203,7 +1227,7 @@ export default function LandingPage() {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(0,201,255,0.3)]">Create Your Account</h2>
+            <h2 className="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-[#01C4FA] via-white to-[#01C4FA] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(1,196,250,0.3)]">Create Your Account</h2>
             <p className="text-xs text-center text-white/50 mb-6">Launch your AI sales engine in 5 minutes</p>
 
             <form onSubmit={handleSignUp} noValidate className="space-y-4">
@@ -1217,22 +1241,16 @@ export default function LandingPage() {
                 onServerProblem={setSignUpEmailProblem}
               />
               <div>
-                <label htmlFor="signup-password" className="block text-xs font-semibold text-white/40 mb-1">Password</label>
-                <input
+                <PasswordField
                   id="signup-password"
-                  type="password"
-                  required
+                  label="Password"
+                  value={signUpPassword}
+                  onChange={setSignUpPassword}
                   autoComplete="new-password"
                   placeholder="Create a password"
-                  value={signUpPassword}
-                  onChange={(e) => setSignUpPassword(e.target.value)}
-                  aria-describedby="signup-password-rules"
-                  aria-invalid={signUpTried && !passwordMeetsRules(signUpPassword)}
-                  className={`w-full bg-white/[0.05] border backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-colors ${
-                    signUpTried && !passwordMeetsRules(signUpPassword)
-                      ? "border-rose-400/60 focus:border-rose-400/80"
-                      : "border-white/10 focus:border-[#00C9FF]/50"
-                  }`}
+                  tone="dark"
+                  describedBy="signup-password-rules"
+                  invalid={signUpTried && !passwordMeetsRules(signUpPassword)}
                 />
                 <div className="mt-2.5">
                   <PasswordRules id="signup-password-rules" password={signUpPassword} tone="dark" />
@@ -1265,9 +1283,12 @@ export default function LandingPage() {
                 type="submit"
                 disabled={signUpLoading}
                 style={{ touchAction: "manipulation" }}
-                className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full bg-gradient-to-r from-[#01C4FA] to-[#233067] text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_18px_rgba(1,196,250,0.35)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                {signUpLoading ? "Creating Account..." : "Create Account & Start Onboarding"}
+                <span className="flex items-center justify-center gap-2">
+                  {signUpLoading && <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-hidden="true" />}
+                  {signUpLoading ? "Creating your account..." : "Create Account & Start Onboarding"}
+                </span>
               </button>
             </form>
             <p className="text-xs text-center text-white/30 mt-6">
@@ -1278,7 +1299,7 @@ export default function LandingPage() {
                   setIsLoginModalOpen(true);
                 }}
                 style={{ touchAction: "manipulation" }}
-                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#00C9FF] hover:underline bg-transparent border-none"
+                className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#01C4FA] hover:underline bg-transparent border-none"
               >
                 Log In
               </button>

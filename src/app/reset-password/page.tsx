@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Link2Off, LockKeyhole } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -10,24 +10,21 @@ import BrandLoader from "../components/auth/BrandLoader";
 import PasswordField from "../components/auth/PasswordField";
 import PasswordRules from "../components/auth/PasswordRules";
 import { PASSWORD_RULES_MESSAGE, passwordMeetsRules } from "../lib/passwordRules";
+import { AUTH_MSG, isOffline, mayHaveReachedServer, networkMessage, waitUntilOnline, withTimeout } from "../lib/authMessages";
+import { forgetLinkError, readLinkError, tidyAddress } from "../lib/linkErrors";
 
 /*
- * "Set a new password" page (Step 3C). The reset email link lands here.
- * Implicit flow: Supabase reads the one-time login from the web address.
+ * "Set a new password" page (Step 3C, made safer in Step 3D).
+ * The reset email link lands here. Implicit flow: Supabase reads the one-time login
+ * from the web address.
+ * Step 3D: the link's error is read FIRST; a used or expired link never shows the form.
  * A tiny script in layout.tsx notes (for this tab only) that a real reset link
  * was opened, so this form never appears for someone who simply typed the address.
  */
-type Status = "checking" | "form" | "done" | "invalid";
+type Status = "checking" | "form" | "done" | "invalid" | "leaving";
 
 const RECOVERY_KEY = "bombin-recovery";
 const RECOVERY_MAX_AGE_MS = 60 * 60 * 1000;
-
-function readLinkError(): string | null {
-  if (typeof window === "undefined") return null;
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const query = new URLSearchParams(window.location.search);
-  return hash.get("error_code") || query.get("error_code") || hash.get("error") || query.get("error") || null;
-}
 
 function recoveryLinkOpened(): boolean {
   try {
@@ -69,6 +66,9 @@ function forgetRecovery() {
   }
 }
 
+const primaryButton =
+  "pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100";
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("checking");
@@ -78,19 +78,35 @@ export default function ResetPasswordPage() {
   const [tried, setTried] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set when a save attempt got no reply: the new password may already be saved.
+  const maybeSaved = useRef(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     let active = true;
+    // 1. The link's error comes first.
     const linkError = readLinkError();
 
-    if (justFinished()) {
+    if (justFinished() && !linkError) {
       setStatus("done");
+      return;
+    }
+
+    if (linkError) {
+      // A used or expired link: always the "expired" screen, never the form,
+      // even when this browser still holds a login from an earlier link.
+      forgetLinkError();
+      forgetRecovery();
+      setJustFinished(false);
+      setExpired(linkError === "otp_expired");
+      setStatus("invalid");
+      tidyAddress();
       return;
     }
 
     (async () => {
       let ok = false;
-      if (!linkError && recoveryLinkOpened()) {
+      if (recoveryLinkOpened()) {
         try {
           const { user } = await getVerifiedUser();
           ok = Boolean(user);
@@ -103,10 +119,8 @@ export default function ResetPasswordPage() {
         setStatus("form");
         return;
       }
-      setExpired(linkError === "otp_expired");
       setStatus("invalid");
-      // Tidy any leftover link details out of the web address.
-      if (window.location.hash || linkError) window.history.replaceState(window.history.state, "", window.location.pathname);
+      tidyAddress();
     })();
 
     return () => {
@@ -117,6 +131,20 @@ export default function ResetPasswordPage() {
   const rulesOk = passwordMeetsRules(password);
   const matches = password.length > 0 && password === confirm;
 
+  // Done: sign out of this one-time login so the person logs in fresh.
+  const finish = () => {
+    forgetRecovery();
+    setJustFinished(true);
+    setStatus("done");
+    void clearLocalLogin();
+  };
+
+  const goToLogin = () => {
+    setJustFinished(false);
+    setStatus("leaving");
+    router.replace("/?login=1");
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTried(true);
@@ -126,41 +154,52 @@ export default function ResetPasswordPage() {
       return;
     }
     if (!matches) {
-      setError("The two passwords don't match yet.");
+      setError(AUTH_MSG.passwordsDiffer);
       return;
     }
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      if (updateError) {
-        const msg = updateError.message ?? "";
-        if (updateError.code === "same_password" || /different from the old/i.test(msg)) {
-          setError("Please choose a password you haven't used here before.");
-        } else if (updateError.code === "weak_password" || /weak|should be at least/i.test(msg)) {
-          setError("That password is too easy to guess. Please choose a stronger one.");
-        } else if (/fetch|network/i.test(msg)) {
-          setError("Could not reach the server. Check your internet connection and try again.");
-        } else if (updateError.status === 401 || /session|jwt|expired/i.test(msg)) {
-          forgetRecovery();
-          setStatus("invalid");
-        } else {
-          setError("We couldn't update your password. Please try again.");
-        }
+      // Offline before sending: nothing has been sent yet, so wait quietly and try once.
+      if (isOffline() && !(await waitUntilOnline())) {
+        setError(AUTH_MSG.offline);
         return;
       }
-      // Done: sign out of this one-time login so the person logs in fresh.
-      forgetRecovery();
-      setJustFinished(true);
-      setStatus("done");
-      await clearLocalLogin();
-    } catch {
-      setError("Could not reach the server. Check your internet connection and try again.");
+      let updateError: { message?: string; code?: string; status?: number } | null = null;
+      try {
+        ({ error: updateError } = await withTimeout(supabase.auth.updateUser({ password })));
+      } catch (err) {
+        updateError = err as Error;
+      }
+      if (!updateError) {
+        finish();
+        return;
+      }
+      const msg = updateError.message ?? "";
+      if (updateError.code === "same_password" || /different from the old/i.test(msg)) {
+        // The last try got no reply, so it most likely went through already.
+        if (maybeSaved.current) finish();
+        else setError(AUTH_MSG.passwordReused);
+      } else if (updateError.code === "weak_password" || /weak|should be at least/i.test(msg)) {
+        setError(AUTH_MSG.passwordWeak);
+      } else if (mayHaveReachedServer(updateError)) {
+        maybeSaved.current = true;
+        setError(networkMessage(AUTH_MSG.passwordNotSaved));
+      } else if (updateError.status === 401 || /session|jwt|expired/i.test(msg)) {
+        forgetRecovery();
+        setStatus("invalid");
+      } else {
+        setError(AUTH_MSG.passwordNotSaved);
+      }
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
 
   if (status === "checking") return <BrandLoader label="Opening your reset link..." />;
+  if (status === "leaving") return <BrandLoader label="Taking you to log in..." />;
 
   return (
     <AuthShell>
@@ -195,12 +234,8 @@ export default function ResetPasswordPage() {
 
           {error && <p role="status" className="text-xs text-center text-rose-300 light:text-rose-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            style={{ touchAction: "manipulation" }}
-            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
-          >
+          <button type="submit" disabled={saving} style={{ touchAction: "manipulation" }} className={`${primaryButton} flex items-center justify-center gap-2`}>
+            {saving && <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-hidden="true" />}
             {saving ? "Saving..." : "Save new password"}
           </button>
         </form>
@@ -213,15 +248,7 @@ export default function ResetPasswordPage() {
           </div>
           <h1 className={authTitle}>Password updated</h1>
           <p className={authText}>Your new password is saved. Log in with it to continue.</p>
-          <button
-            type="button"
-            onClick={() => {
-              setJustFinished(false);
-              router.replace("/?login=1");
-            }}
-            style={{ touchAction: "manipulation" }}
-            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01]"
-          >
+          <button type="button" onClick={goToLogin} style={{ touchAction: "manipulation" }} className={primaryButton}>
             Log In
           </button>
         </div>
@@ -232,19 +259,15 @@ export default function ResetPasswordPage() {
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/[0.05] light:border-[#233067]/15 light:bg-[#233067]/5">
             <Link2Off className="h-7 w-7 text-white/70 light:text-[#233067]/70" />
           </div>
-          <h1 className={authTitle}>{expired ? "This reset link has expired" : "This reset link didn't work"}</h1>
+          <h1 className={authTitle}>{expired ? "This reset link has expired or was already used" : "This reset link didn't work"}</h1>
           <p className={authText}>
-            Reset links work once and only for a short time. Ask for a new one, then open the newest email.
+            Reset links work once and only for a short time. Ask for a new one, then open the newest email. Only the
+            newest link works.
           </p>
-          <button
-            type="button"
-            onClick={() => router.push("/forgot-password")}
-            style={{ touchAction: "manipulation" }}
-            className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01]"
-          >
-            Send me a new link
+          <button type="button" onClick={() => router.push("/forgot-password")} style={{ touchAction: "manipulation" }} className={primaryButton}>
+            Send a new link
           </button>
-          <button type="button" onClick={() => router.push("/?login=1")} style={{ touchAction: "manipulation" }} className={authLink}>
+          <button type="button" onClick={goToLogin} style={{ touchAction: "manipulation" }} className={authLink}>
             Back to log in
           </button>
         </div>

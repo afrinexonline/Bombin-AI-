@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { getVerifiedUser, isEmailConfirmed } from "../lib/authEmail";
+import BrandLoader from "./auth/BrandLoader";
+import { useBackAfterLogOutCheck } from "./useBackAfterLogOutCheck";
 
 export default function DashboardGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  useBackAfterLogOutCheck();
 
   useEffect(() => {
     let isMounted = true;
@@ -60,13 +63,9 @@ export default function DashboardGuard({ children }: { children: React.ReactNode
     };
   }, [router]);
 
-  // Render a subtle loading state while verifying to prevent content flash
+  // Brand loader while checking (Step 3D): never the landing page, never the dashboard.
   if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-cyan/20 border-t-cyan animate-spin" />
-      </div>
-    );
+    return <BrandLoader label="Opening your dashboard..." />;
   }
 
   return <>{children}</>;

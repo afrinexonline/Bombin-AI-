@@ -7,10 +7,10 @@ import Image from "next/image";
  */
 export default function BrandLoader({ label = "Loading..." }: { label?: string }) {
   return (
-    <main
+    <div
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-[60] overflow-hidden flex items-center justify-center bg-black light:bg-[#F4F5F7]"
+      className="fixed inset-0 z-[200] overflow-hidden flex items-center justify-center bg-black light:bg-[#F4F5F7]"
     >
       {/* Soft aura (decoration only) */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
@@ -33,6 +33,6 @@ export default function BrandLoader({ label = "Loading..." }: { label?: string }
         </div>
         <p className="text-sm font-medium tracking-wide text-white/60 light:text-[#233067]/70">{label}</p>
       </div>
-    </main>
+    </div>
   );
 }

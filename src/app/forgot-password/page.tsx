@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Mail, RotateCw } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -8,6 +8,7 @@ import { markLinkKind, resetRedirectUrl } from "../lib/authEmail";
 import { isValidEmailFormat, normalizeEmail } from "../lib/emailChecks";
 import AuthShell, { authLink, authText, authTitle } from "../components/auth/AuthShell";
 import EmailField from "../components/auth/EmailField";
+import { AUTH_MSG, isOffline, isRateLimited, waitUntilOnline, withTimeout } from "../lib/authMessages";
 
 /*
  * "Forgot password?" page (Step 3C).
@@ -55,34 +56,53 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(t);
   }, [secondsLeft]);
 
+  // A lock that can't be beaten by a fast double-tap (state updates are not instant).
+  const sendingRef = useRef(false);
+
+  /*
+   * Step 3D: send at most ONE email per press.
+   * - Offline before sending: nothing has gone out, so wait quietly for the connection
+   *   and try once; if still offline, say so.
+   * - Once the request has left the browser, we never send again by ourselves. Any
+   *   answer, a lost reply or a timeout all lead to the same "Check your email" screen,
+   *   because the email may well be on its way (sending again would kill that link).
+   */
   const send = async (address: string) => {
     setError(null);
-    if (!isValidEmailFormat(address) || secondsLeft > 0 || sending) return;
+    if (!isValidEmailFormat(address) || secondsLeftNow() > 0 || sendingRef.current) return;
+    sendingRef.current = true;
     setSending(true);
     try {
       const clean = normalizeEmail(address);
-      const { error: sendError } = await supabase.auth.resetPasswordForEmail(clean, {
-        redirectTo: resetRedirectUrl(),
-      });
-      const msg = sendError?.message ?? "";
-      if (sendError && (sendError.status === 429 || /security purposes|rate limit|too many/i.test(msg))) {
-        markSent();
-        setSecondsLeft(WAIT_SECONDS);
-        setError("Please wait a little before asking for another email.");
+      if (isOffline() && !(await waitUntilOnline())) {
+        setError(AUTH_MSG.offline);
         return;
       }
-      if (sendError && /fetch|network/i.test(msg)) {
-        setError("Could not reach the server. Check your internet connection and try again.");
-        return;
-      }
-      // Success, or any other answer: same screen, so we never reveal account details.
-      markSent();
+
+      // From here on the request may reach Supabase.
       markLinkKind("recovery");
+      let sendError: { status?: number; message?: string } | null = null;
+      try {
+        ({ error: sendError } = await withTimeout(
+          supabase.auth.resetPasswordForEmail(clean, { redirectTo: resetRedirectUrl() }),
+        ));
+      } catch (err) {
+        sendError = err as Error; // lost reply or timeout: it may have gone through
+      }
+
+      markSent();
       setSecondsLeft(WAIT_SECONDS);
+      if (isRateLimited(sendError) && !sentTo) {
+        // Supabase only says this when an email was sent very recently.
+        setError(AUTH_MSG.waitBeforeResend);
+        return;
+      }
+      // Success, a lost reply, or any other answer: same screen, so we never
+      // reveal account details and never send a second email by ourselves.
       setSentTo(clean);
-    } catch {
-      setError("Could not reach the server. Check your internet connection and try again.");
+      if (isRateLimited(sendError)) setError(AUTH_MSG.waitBeforeResend);
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   };
@@ -110,8 +130,8 @@ export default function ForgotPasswordPage() {
           <h1 className={authTitle}>Check your email</h1>
           <p className={authText}>
             If an account exists for{" "}
-            <span className="font-semibold text-white break-all light:text-[#233067]">{sentTo}</span>, a link to set a
-            new password is on its way. The link works once and expires after a while.
+            <span className="font-semibold text-white break-all light:text-[#233067]">{sentTo}</span>, we&apos;ve sent a
+            link to set a new password. Check your inbox and spam folder. Only the newest link works.
           </p>
           <div className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-white/55 light:border-[#233067]/10 light:bg-[#233067]/[0.04] light:text-[#233067]/70">
             Can&apos;t find it? Check your <strong className="text-white/80 light:text-[#233067]">Spam</strong> or{" "}
@@ -166,9 +186,10 @@ export default function ForgotPasswordPage() {
           type="submit"
           disabled={sending || secondsLeft > 0}
           style={{ touchAction: "manipulation" }}
-          className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#01C4FA] to-[#233067] py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(1,196,250,0.35)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          {waitLabel ?? "Send reset link"}
+          {sending && <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-hidden="true" />}
+          {sending ? "Sending your link..." : waitLabel ?? "Send reset link"}
         </button>
         {backToLogin}
       </form>

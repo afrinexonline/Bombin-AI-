@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { getVerifiedUser, isEmailConfirmed } from "../lib/authEmail";
 import BrandLoader from "./auth/BrandLoader";
+import { useBackAfterLogOutCheck } from "./useBackAfterLogOutCheck";
 
 /*
  * Door check for onboarding (Step 3.6).
@@ -15,6 +16,7 @@ import BrandLoader from "./auth/BrandLoader";
 export default function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
+  useBackAfterLogOutCheck();
 
   useEffect(() => {
     let isMounted = true;

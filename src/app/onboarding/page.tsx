@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useOnboarding } from "../context/OnboardingContext";
+import { useNavTransition } from "../components/auth/NavTransition";
 import StepStoreConfig from "../components/onboarding/StepStoreConfig";
 import StepToneSelection from "../components/onboarding/StepToneSelection";
 import StepPayoutConfig from "../components/onboarding/StepPayoutConfig";
@@ -17,7 +17,8 @@ import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 const STEP_LABELS = ["Store", "Tone", "Payout", "Connect"];
 
 export default function OnboardingPage() {
-  const router = useRouter();
+  // Brand loader between pages (Step 3D).
+  const { go } = useNavTransition();
   const { data, nextStep, prevStep, updateFields, isStepValid, syncToSupabase, isBankDropdownOpen, isHydrating } =
     useOnboarding();
   const { currentStep } = data;
@@ -32,7 +33,7 @@ export default function OnboardingPage() {
       if (currentStep === 4) {
         await syncToSupabase(4);
         updateFields({ completed: true });
-        router.push("/dashboard");
+        go("/dashboard", "Opening your dashboard...");
       } else {
         await nextStep();
       }

@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import LogOutButton from "./auth/LogOutButton";
 
 const navItems = [
   { icon: Home, label: "Home", id: "home", href: "/dashboard" },
@@ -85,8 +86,9 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom avatar */}
-      <div className="mt-auto">
+      {/* Log out + avatar */}
+      <div className="mt-auto flex flex-col items-center gap-3">
+        <LogOutButton variant="sidebar" />
         <div
           className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan/30 to-purple-light/30 flex items-center justify-center text-xs font-semibold"
           style={{ border: "1px solid var(--border-card)", color: "var(--text-secondary)" }}

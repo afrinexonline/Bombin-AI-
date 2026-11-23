@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import WhatsAppModal from "./WhatsAppModal";
 import Image from "next/image";
+import LogOutButton from "./auth/LogOutButton";
 
 export default function TopBar() {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
@@ -72,6 +73,11 @@ export default function TopBar() {
             <MessageCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             <span>Connect WhatsApp</span>
           </button>
+
+          {/* Log out on phones and tablets (the desktop sidebar has its own) */}
+          <div className="lg:hidden">
+            <LogOutButton variant="topbar" />
+          </div>
         </div>
       </header>
 

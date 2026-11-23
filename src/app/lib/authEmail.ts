@@ -1,5 +1,5 @@
 import { isAuthRetryableFetchError, type User } from "@supabase/supabase-js";
-import { supabase } from "./supabaseClient";
+import { supabase, supabaseUrl } from "./supabaseClient";
 
 /*
  * Shared helpers for email confirmation (Step 3).
@@ -28,13 +28,62 @@ export async function getVerifiedUser(): Promise<{ user: User | null; offline: b
   return { user: null, offline: false };
 }
 
-/** Forget any login saved in this browser (used before sign-up / sign-in). */
-export async function clearLocalLogin() {
+/** Supabase's saved-login keys in this browser (e.g. "sb-<project>-auth-token"). */
+function wipeSavedLoginKeys() {
   try {
-    await supabase.auth.signOut({ scope: "local" });
+    const ref = new URL(supabaseUrl).hostname.split(".")[0];
+    const base = `sb-${ref}-auth-token`;
+    for (const key of [base, `${base}-code-verifier`, `${base}-user`]) {
+      window.localStorage.removeItem(key);
+    }
   } catch {
-    /* nothing saved, or offline: nothing more to do */
+    /* storage blocked or no URL: nothing saved */
   }
+}
+
+/**
+ * Forget any login saved in this browser (used before sign-up, after a password
+ * reset, and on log-out). Returns false if Supabase couldn't be told (e.g. offline);
+ * the login is still wiped from this browser in that case.
+ */
+export async function clearLocalLogin(): Promise<boolean> {
+  try {
+    const { error } = await supabase.auth.signOut({ scope: "local" });
+    if (!error) return true;
+  } catch {
+    /* fall through */
+  }
+  // Supabase only removes the saved login when it got an answer. Remove it ourselves.
+  wipeSavedLoginKeys();
+  return false;
+}
+
+/** Only clear when a login is actually saved (saves a server trip when there is none). */
+export async function clearLocalLoginIfAny() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) await clearLocalLogin();
+}
+
+/**
+ * Log out completely in this browser: the Supabase login plus our own saved
+ * onboarding draft and email-link notes. Keeps only harmless things like the theme
+ * and the "wait before resending" timers.
+ * Returns false if Supabase couldn't be reached (the browser copy is wiped anyway;
+ * the caller should then do a full page load so nothing stays in memory).
+ */
+export async function logOut(): Promise<boolean> {
+  const clean = await clearLocalLogin();
+  try {
+    for (const key of ["bombin-onboarding", "bombin-pending-email", "bombin-link-kind"]) {
+      window.localStorage.removeItem(key);
+    }
+    for (const key of ["bombin-recovery", "bombin-reset-done", "bombin-link-error"]) {
+      window.sessionStorage.removeItem(key);
+    }
+  } catch {
+    /* ignore */
+  }
+  return clean;
 }
 
 /** Where the link in the confirmation email sends people: the site the person is on
