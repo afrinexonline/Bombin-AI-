@@ -4,8 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabaseClient";
-import { clearLocalLogin, confirmRedirectUrl, isEmailConfirmed, markEmailSent, savePendingEmail } from "./lib/authEmail";
+import { clearLocalLogin, isEmailConfirmed, markEmailSent, markLinkKind, savePendingEmail } from "./lib/authEmail";
+import { isValidEmailFormat, normalizeEmail } from "./lib/emailChecks";
 import ResendEmailButton from "./components/auth/ResendEmailButton";
+import EmailField from "./components/auth/EmailField";
+import PasswordRules from "./components/auth/PasswordRules";
+import { PASSWORD_RULES_MESSAGE, passwordMeetsRules } from "./lib/passwordRules";
 import {
   Zap,
   ArrowRight,
@@ -118,7 +122,7 @@ export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [faqActiveIndex, setFaqActiveIndex] = useState<number | null>(null);
 
-  // Sign In States
+  // Log In States
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -132,21 +136,26 @@ export default function LandingPage() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpError, setSignUpError] = useState<string | null>(null);
   const [signUpLoading, setSignUpLoading] = useState(false);
+  // True after the first "Create Account" tap, so missing details are pointed out.
+  const [signUpTried, setSignUpTried] = useState(false);
+  // A throwaway / no-mail problem already shown under the email box.
+  const [signUpEmailProblem, setSignUpEmailProblem] = useState<string | null>(null);
 
-  // Links like /?signup=1 or /?signin=1 (from the email screens) open the right pop-up.
+  // Links like /?signup=1 or /?login=1 (from the email screens) open the right pop-up.
   useEffect(() => {
     // Safety net: if Supabase sent an email link to the home page (it does this when
     // the link's address is not on its allowed list), pass it on to the confirmation page.
     const hash = window.location.hash;
-    if (/(^|[#&])(access_token|error_code)=/.test(hash) && /type=signup|error_code=/.test(hash)) {
-      window.location.replace(`/auth/confirm${hash}`);
+    // (A tiny script in layout.tsx normally does this before anything is drawn.)
+    if (/(^|[#&])(access_token|error_code)=/.test(hash)) {
+      window.location.replace(`${/type=recovery/.test(hash) ? "/reset-password" : "/auth/confirm"}${hash}`);
       return;
     }
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("signup") === "1") setIsSignUpModalOpen(true);
-    else if (params.get("signin") === "1") setIsLoginModalOpen(true);
-    if (params.has("signup") || params.has("signin")) {
+    else if (params.get("login") === "1" || params.get("signin") === "1") setIsLoginModalOpen(true);
+    if (params.has("signup") || params.has("login") || params.has("signin")) {
       window.history.replaceState(window.history.state, "", window.location.pathname);
     }
   }, []);
@@ -156,14 +165,18 @@ export default function LandingPage() {
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("bombin-onboarding");
     }
-    setLoginLoading(true);
     setLoginError(null);
     setLoginNeedsConfirm(false);
+    if (!isValidEmailFormat(loginEmail)) {
+      setLoginError("Please enter a full email address, like name@gmail.com.");
+      return;
+    }
+    setLoginLoading(true);
     try {
       // Start clean: forget any old login saved in this browser first.
       await clearLocalLogin();
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
+        email: normalizeEmail(loginEmail),
         password: loginPassword,
       });
       if (authError) throw authError;
@@ -186,7 +199,7 @@ export default function LandingPage() {
       } else if (/fetch/i.test(msg)) {
         setLoginError("Could not reach the server. Check your internet connection and try again.");
       } else {
-        setLoginError("Sign-in failed. Please try again.");
+        setLoginError("Log-in failed. Please try again.");
       }
     } finally {
       setLoginLoading(false);
@@ -198,14 +211,22 @@ export default function LandingPage() {
     if (typeof window !== "undefined") {
       window.localStorage.removeItem("bombin-onboarding");
     }
-    setSignUpLoading(true);
     setSignUpError(null);
+    setSignUpTried(true);
+    // These messages already show under the email box.
+    if (!isValidEmailFormat(signUpEmail) || signUpEmailProblem) return;
+    if (!passwordMeetsRules(signUpPassword)) {
+      setSignUpError(PASSWORD_RULES_MESSAGE);
+      return;
+    }
+    setSignUpLoading(true);
 
     // Same screen for a new email and an email that already has an account,
     // so nobody can find out which emails are registered.
     const goToCheckEmail = () => {
-      savePendingEmail(signUpEmail);
+      savePendingEmail(normalizeEmail(signUpEmail));
       markEmailSent();
+      markLinkKind("signup");
       setIsSignUpModalOpen(false);
       router.push("/check-email");
     };
@@ -214,37 +235,47 @@ export default function LandingPage() {
       // Start clean: an old login left in this browser (e.g. from a deleted
       // account) must never carry over into a new sign-up.
       await clearLocalLogin();
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: signUpEmail,
-        password: signUpPassword,
-        options: { emailRedirectTo: confirmRedirectUrl() },
-      });
-      if (authError) throw authError;
 
-      // "Confirm email" ON: no session yet, the user must click the link first.
-      if (!authData.session) {
+      // Sign-up goes through our server, which checks the email (format,
+      // throwaway domains, can it receive mail) before creating the account.
+      let res: Response;
+      try {
+        res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: normalizeEmail(signUpEmail), password: signUpPassword }),
+        });
+      } catch {
+        setSignUpError("Could not reach the server. Check your internet connection and try again.");
+        return;
+      }
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.error) {
+        setSignUpError(data?.error ?? "We couldn't create your account right now. Please try again.");
+        return;
+      }
+
+      // "Confirm email" ON (or the email already has an account): same screen for both.
+      if (data.result !== "signed_in" || !data.session) {
         goToCheckEmail();
         return;
       }
 
       // "Confirm email" OFF: signed in straight away, same as before.
+      const { error: sessionError } = await supabase.auth.setSession(data.session);
+      if (sessionError) {
+        setSignUpError("Your account was created. Please log in to continue.");
+        return;
+      }
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("bombin-onboarding");
       }
       setIsSignUpModalOpen(false);
       router.push("/onboarding");
-    } catch (err: any) {
-      if (/already registered|already exists/i.test(err?.message ?? "") || err?.code === "user_already_exists") {
-        goToCheckEmail();
-      } else {
-        console.error("Supabase Auth signUp failed:", err);
-        const isFetchError = err.message?.includes("Failed to fetch") || err.message?.includes("fetch");
-        const userMessage = isFetchError
-          ? "Database connection failed. Please check your network and Supabase configuration."
-          : err.message || "An authentication error occurred.";
-        setSignUpError(userMessage);
-      }
-      // Explicitly halt: do NOT close the modal, do NOT redirect to /onboarding, do NOT clear localstorage
+    } catch {
+      // Explicitly halt: do NOT close the modal, do NOT redirect to /onboarding.
+      setSignUpError("Something went wrong. Please try again.");
     } finally {
       setSignUpLoading(false);
     }
@@ -261,7 +292,7 @@ export default function LandingPage() {
       if (error) throw error;
     } catch {
       // Stay on the form; never fall through to a dashboard.
-      setLoginError("Google sign-in is not available right now. Please use your email and password.");
+      setLoginError("Google log-in is not available right now. Please use your email and password.");
     }
   };
 
@@ -357,7 +388,7 @@ export default function LandingPage() {
               style={{ touchAction: "manipulation" }}
               className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20"
             >
-              Sign In
+              Log In
             </button>
             <button
               onClick={() => setIsSignUpModalOpen(true)}
@@ -1089,22 +1120,24 @@ export default function LandingPage() {
             </button>
             <h2 className="text-2xl font-bold mb-6 text-center text-white">Welcome Back</h2>
             <form onSubmit={handleSignIn} className="space-y-4">
+              <EmailField id="login-email" value={loginEmail} onChange={setLoginEmail} tone="dark" />
               <div>
-                <label className="block text-xs font-semibold text-white/40 mb-1">Email Address</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="login-password" className="block text-xs font-semibold text-white/40">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/forgot-password")}
+                    style={{ touchAction: "manipulation" }}
+                    className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-xs font-semibold text-[#01C4FA] hover:underline bg-transparent border-none"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <input
-                  type="email"
-                  required
-                  placeholder="name@example.com"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00C9FF]/50 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-white/40 mb-1">Password</label>
-                <input
+                  id="login-password"
                   type="password"
                   required
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
@@ -1139,7 +1172,7 @@ export default function LandingPage() {
                 style={{ touchAction: "manipulation" }}
                 className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer w-full text-white font-bold rounded-xl px-4 py-3 mt-4 hover:scale-[1.02] transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50"
               >
-                {loginLoading ? "Logging in..." : "Login"}
+                {loginLoading ? "Logging in..." : "Log In"}
               </button>
             </form>
             <p className="text-xs text-center text-white/30 mt-6">
@@ -1173,28 +1206,37 @@ export default function LandingPage() {
             <h2 className="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(0,201,255,0.3)]">Create Your Account</h2>
             <p className="text-xs text-center text-white/50 mb-6">Launch your AI sales engine in 5 minutes</p>
 
-            <form onSubmit={handleSignUp} className="space-y-4">
+            <form onSubmit={handleSignUp} noValidate className="space-y-4">
+              <EmailField
+                id="signup-email"
+                value={signUpEmail}
+                onChange={setSignUpEmail}
+                tone="dark"
+                serverCheck
+                showErrors={signUpTried}
+                onServerProblem={setSignUpEmailProblem}
+              />
               <div>
-                <label className="block text-xs font-semibold text-white/40 mb-1">Email Address</label>
+                <label htmlFor="signup-password" className="block text-xs font-semibold text-white/40 mb-1">Password</label>
                 <input
-                  type="email"
-                  required
-                  placeholder="name@example.com"
-                  value={signUpEmail}
-                  onChange={(e) => setSignUpEmail(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00C9FF]/50 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-white/40 mb-1">Password</label>
-                <input
+                  id="signup-password"
                   type="password"
                   required
-                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  placeholder="Create a password"
                   value={signUpPassword}
                   onChange={(e) => setSignUpPassword(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/10 backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#00C9FF]/50 transition-colors"
+                  aria-describedby="signup-password-rules"
+                  aria-invalid={signUpTried && !passwordMeetsRules(signUpPassword)}
+                  className={`w-full bg-white/[0.05] border backdrop-blur-xl rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-colors ${
+                    signUpTried && !passwordMeetsRules(signUpPassword)
+                      ? "border-rose-400/60 focus:border-rose-400/80"
+                      : "border-white/10 focus:border-[#00C9FF]/50"
+                  }`}
                 />
+                <div className="mt-2.5">
+                  <PasswordRules id="signup-password-rules" password={signUpPassword} tone="dark" />
+                </div>
               </div>
 
               {/* Sign up with Google button inside Create account modal */}
@@ -1238,7 +1280,7 @@ export default function LandingPage() {
                 style={{ touchAction: "manipulation" }}
                 className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-[#00C9FF] hover:underline bg-transparent border-none"
               >
-                Sign In
+                Log In
               </button>
             </p>
           </div>

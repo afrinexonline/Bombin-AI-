@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { getVerifiedUser, isEmailConfirmed } from "../lib/authEmail";
+import BrandLoader from "./auth/BrandLoader";
 
 /*
  * Door check for onboarding (Step 3.6).
@@ -58,11 +59,7 @@ export default function OnboardingGuard({ children }: { children: React.ReactNod
   }, [router]);
 
   if (!allowed) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-cyan/20 border-t-cyan animate-spin" />
-      </div>
-    );
+    return <BrandLoader label="Getting things ready..." />;
   }
 
   return <>{children}</>;

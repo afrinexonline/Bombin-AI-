@@ -6,6 +6,7 @@ import { CheckCircle2, Link2Off } from "lucide-react";
 import { clearPendingEmail, getVerifiedUser, isEmailConfirmed, readPendingEmail } from "../../lib/authEmail";
 import AuthShell, { authLink, authText, authTitle } from "../../components/auth/AuthShell";
 import ResendEmailButton from "../../components/auth/ResendEmailButton";
+import BrandLoader from "../../components/auth/BrandLoader";
 
 /*
  * Where the confirmation email link lands (Step 3.4).
@@ -73,14 +74,11 @@ export default function ConfirmEmailPage() {
     return () => clearTimeout(t);
   }, [status, router]);
 
+  // While the link is being checked: only the branded loader, nothing else.
+  if (status === "checking") return <BrandLoader label="Confirming your email..." />;
+
   return (
     <AuthShell>
-      {status === "checking" && (
-        <div className="flex flex-col items-center gap-4 py-6" role="status">
-          <div className="h-9 w-9 rounded-full border-2 border-[#01C4FA]/20 border-t-[#01C4FA] animate-spin" />
-          <p className={authText}>Confirming your email...</p>
-        </div>
-      )}
 
       {status === "confirmed" && (
         <div className="flex flex-col items-center gap-5">
@@ -88,7 +86,7 @@ export default function ConfirmEmailPage() {
             <CheckCircle2 className="h-7 w-7 text-[#01C4FA] light:text-[#233067]" />
           </div>
           <h1 className={authTitle}>Email confirmed</h1>
-          <p className={authText}>Thank you. Your account is ready. Taking you to set up your store...</p>
+          <p className={authText}>Thank you. Your account is ready. Taking you to set up your AI sales assistant...</p>
           <button
             type="button"
             onClick={() => router.replace("/onboarding")}
@@ -113,8 +111,8 @@ export default function ConfirmEmailPage() {
           <div className="w-full">
             <ResendEmailButton email={email} />
           </div>
-          <button type="button" onClick={() => router.push("/?signin=1")} style={{ touchAction: "manipulation" }} className={authLink}>
-            Back to sign in
+          <button type="button" onClick={() => router.push("/?login=1")} style={{ touchAction: "manipulation" }} className={authLink}>
+            Back to log in
           </button>
         </div>
       )}

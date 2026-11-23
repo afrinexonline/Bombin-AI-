@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabaseClient";
 import {
   confirmRedirectUrl,
   markEmailSent,
+  markLinkKind,
   savePendingEmail,
   secondsUntilResend,
   RESEND_WAIT_SECONDS,
@@ -69,6 +70,7 @@ export default function ResendEmailButton({
       }
       // Success, or any other answer: same message, so we never reveal account details.
       markEmailSent();
+      markLinkKind("signup");
       savePendingEmail(targetEmail);
       setSecondsLeft(RESEND_WAIT_SECONDS);
       setMessage({

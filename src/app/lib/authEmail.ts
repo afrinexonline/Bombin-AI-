@@ -107,3 +107,21 @@ export function secondsUntilResend(): number {
     return 0;
   }
 }
+
+/* Which kind of email link we sent last ("signup" or "recovery"). Only used to send an
+ * expired link that lands on the home page to the right screen. Never holds personal data. */
+const LINK_KIND_KEY = "bombin-link-kind";
+
+export function markLinkKind(kind: "signup" | "recovery") {
+  try {
+    window.localStorage.setItem(LINK_KIND_KEY, kind);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Where the password-reset email link sends people (the site the person is on right now). */
+export function resetRedirectUrl(): string {
+  if (typeof window === "undefined") return "";
+  return `${window.location.origin}/reset-password`;
+}

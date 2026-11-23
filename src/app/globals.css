@@ -3,6 +3,9 @@
 /* `light:` utilities apply when the app's light theme is on (html[data-theme="light"]). */
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
+/* Step 3C: while an email link is being forwarded from "/", show nothing (no landing-page flash). */
+html[data-forwarding] body { visibility: hidden; }
+
 /* ═══════════════════════════════════════════════════
    BOMBIN AI — Liquid Glass Design System v2
    Dark + Light Theme with CSS custom properties

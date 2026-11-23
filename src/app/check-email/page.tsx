@@ -62,13 +62,13 @@ export default function CheckEmailPage() {
         <h1 className={authTitle}>Check your email</h1>
 
         <p className={authText}>
-          We sent a confirmation link to{" "}
+          If this address is real, a confirmation link is on its way to{" "}
           {email ? (
             <span className="font-semibold text-white break-all light:text-[#233067]">{email}</span>
           ) : (
-            "your email address"
+            "your email"
           )}
-          . Open it and tap the button to finish setting up your account.
+          . Open it and tap the button to finish creating your account.
         </p>
 
         <div className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-white/55 light:border-[#233067]/10 light:bg-[#233067]/[0.04] light:text-[#233067]/70">
@@ -84,11 +84,11 @@ export default function CheckEmailPage() {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/?signin=1")}
+            onClick={() => router.push("/?login=1")}
             style={{ touchAction: "manipulation" }}
             className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer text-xs text-white/45 hover:text-white/70 light:text-[#233067]/55 light:hover:text-[#233067]"
           >
-            Already confirmed? Sign in
+            Already confirmed? Log in
           </button>
         </div>
       </div>

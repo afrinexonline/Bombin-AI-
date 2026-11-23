@@ -20,6 +20,30 @@ export const metadata: Metadata = {
     "AI-powered WhatsApp sales automation. Close deals faster with intelligent responses, real-time momentum tracking, and seamless payment routing.",
 };
 
+/*
+ * Runs before the page draws anything (Step 3C flash fix).
+ * If an email link from Supabase lands on the home page "/" (Supabase falls back to
+ * the Site URL when the link's own address isn't on its allowed list), forward it at
+ * once to the right page, and keep the screen blank meanwhile, so the landing page
+ * never flashes. Recovery links go to /reset-password, everything else to /auth/confirm.
+ * It also notes (for this tab only) that a real password-reset link was opened, because
+ * Supabase wipes the link from the address bar before the reset page can read it.
+ * Contains no secrets; it only reads the web address and one saved word.
+ */
+const EMAIL_LINK_FORWARD = `(function(){try{
+var l=window.location;var h=l.hash||"";
+var isRecoveryLink=/(^|&|#)type=recovery(&|$)/.test(h)&&/access_token=/.test(h);
+if(isRecoveryLink){try{sessionStorage.setItem("bombin-recovery",String(Date.now()));}catch(e){}}
+if(l.pathname!=="/")return;
+if(!/(^|[#&])(access_token|error_code|error)=/.test(h))return;
+var kind="";try{kind=localStorage.getItem("bombin-link-kind")||"";}catch(e){}
+var recovery=isRecoveryLink||(!/access_token=/.test(h)&&kind==="recovery");
+var d=document.documentElement;d.setAttribute("data-forwarding","1");
+var t="";try{t=localStorage.getItem("bombin-theme")||"";}catch(e){}
+d.style.background=t==="light"?"#F4F5F7":"#000";
+l.replace((recovery?"/reset-password":"/auth/confirm")+h);
+}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +54,11 @@ export default function RootLayout({
       lang="en"
       data-theme="dark"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: EMAIL_LINK_FORWARD }} />
+      </head>
       <body className="min-h-full">
         <ThemeProvider>
           <OnboardingProvider>{children}</OnboardingProvider>
