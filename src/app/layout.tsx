@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "BOMBIN AI — Turn Every DM into Cash",
   description:
     "AI-powered WhatsApp sales automation. Close deals faster with intelligent responses, real-time momentum tracking, and seamless payment routing.",
-  appleWebApp: { title: "Bombin AI" },
+  appleWebApp: { title: "Bombin AI", statusBarStyle: "black" },
 };
 
 /* Normal phone width, normal starting size. People can always pinch-zoom by hand. */
@@ -40,10 +40,13 @@ const IOS_NO_AUTO_ZOOM = `(function(){try{
 var n=navigator,ios=/iPad|iPhone|iPod/.test(n.userAgent)||(n.platform==="MacIntel"&&n.maxTouchPoints>1);
 if(!ios)return;
 var c="width=device-width, initial-scale=1, maximum-scale=1";
-var m=document.querySelector('meta[name="viewport"]');
-if(m){m.setAttribute("content",c);return;}
-m=document.createElement("meta");m.name="viewport";m.content=c;document.head.appendChild(m);
-new MutationObserver(function(){document.querySelectorAll('meta[name="viewport"]').forEach(function(x){if(x.content!==c)x.content=c;});}).observe(document.head,{childList:true});
+function fix(){var ms=document.querySelectorAll('meta[name="viewport"]');
+if(!ms.length){var m=document.createElement("meta");m.name="viewport";m.content=c;document.head.appendChild(m);return;}
+for(var i=0;i<ms.length;i++){if(ms[i].getAttribute("content")!==c)ms[i].setAttribute("content",c);}}
+fix();
+/* React adds its own copy of this setting after the page loads (Step 3F finding) and
+   the last copy wins, so keep every copy in line, now and whenever one is added. */
+new MutationObserver(fix).observe(document.head,{childList:true,subtree:true,attributes:true,attributeFilter:["content"]});
 }catch(e){}})();`;
 
 /*

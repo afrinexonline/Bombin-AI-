@@ -19,12 +19,29 @@ const STEP_LABELS = ["Store", "Tone", "Payout", "Connect"];
 export default function OnboardingPage() {
   // Brand loader between pages (Step 3D).
   const { go } = useNavTransition();
-  const { data, nextStep, prevStep, updateFields, isStepValid, syncToSupabase, isBankDropdownOpen, isHydrating } =
+  const { data, nextStep, prevStep, updateField, updateFields, isStepValid, missingFields, syncToSupabase, isBankDropdownOpen, isHydrating } =
     useOnboarding();
   const { currentStep } = data;
 
+  /*
+   * Step 3F safety net: whatever is really in a box is what counts. Phones sometimes
+   * change a box without telling the page in the usual way (pickers, auto-fill, the
+   * keyboard's suggestion bar). Every time a box changes or is left, we read its real
+   * value and save it, so the Continue button always matches what you see.
+   */
+  const syncFromBox = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return;
+    const key = target.dataset.field as keyof typeof data | undefined;
+    if (!key || !(key in data)) return;
+    let value = target.value;
+    if (key === "accountNumber") value = value.replace(/\D/g, "").slice(0, 10);
+    if (data[key] !== value) updateField(key, value as never);
+  };
+  const stillNeeded = isHydrating ? [] : missingFields(currentStep);
+
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const canContinue = !isHydrating && !isSyncing && stillNeeded.length === 0 && isStepValid(currentStep);
 
   const handleNext = async () => {
     setSyncError(null);
@@ -97,7 +114,7 @@ export default function OnboardingPage() {
                   className="text-[10px] font-medium tracking-wider uppercase"
                   style={{
                     color: isActive
-                      ? "#00C9FF"
+                      ? "#01C4FA"
                       : isCompleted
                         ? "var(--text-secondary)"
                         : "var(--text-dimmed)",
@@ -124,15 +141,21 @@ export default function OnboardingPage() {
       </div>
 
       {/* ── Step Content ───────────────────────────── */}
-      <div className="wizard-step w-full" key={isHydrating ? "hydrating" : currentStep}>
+      <div
+        className="wizard-step w-full"
+        key={isHydrating ? "hydrating" : currentStep}
+        onInputCapture={(e) => syncFromBox(e.target)}
+        onChangeCapture={(e) => syncFromBox(e.target)}
+        onBlurCapture={(e) => syncFromBox(e.target)}
+      >
         {isHydrating ? (
-          <div className="bg-blue-950/20 backdrop-blur-xl border border-blue-500/10 rounded-2xl animate-pulse p-8 w-full flex flex-col min-h-[400px]">
-            <div className="h-6 w-1/3 bg-blue-500/10 mb-8 rounded"></div>
-            <div className="h-12 w-full bg-blue-500/5 mb-6 rounded-xl border border-blue-500/5"></div>
-            <div className="h-12 w-full bg-blue-500/5 mb-6 rounded-xl border border-blue-500/5"></div>
+          <div className="bg-[#233067]/20 backdrop-blur-xl border border-[#01C4FA]/10 rounded-2xl animate-pulse p-8 w-full flex flex-col min-h-[400px]">
+            <div className="h-6 w-1/3 bg-[#01C4FA]/10 mb-8 rounded"></div>
+            <div className="h-12 w-full bg-[#01C4FA]/5 mb-6 rounded-xl border border-[#01C4FA]/5"></div>
+            <div className="h-12 w-full bg-[#01C4FA]/5 mb-6 rounded-xl border border-[#01C4FA]/5"></div>
             
             <div className="flex justify-end mt-auto pt-6">
-              <div className="h-11 w-32 bg-blue-500/10 rounded-xl"></div>
+              <div className="h-11 w-32 bg-[#01C4FA]/10 rounded-xl"></div>
             </div>
           </div>
         ) : (
@@ -167,8 +190,10 @@ export default function OnboardingPage() {
         {/* Next / Launch Button */}
         <button
           onClick={handleNext}
-          disabled={isHydrating || !isStepValid(currentStep) || isSyncing}
-          className="btn-gradient px-6 py-3 text-sm font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
+          disabled={!canContinue}
+          aria-describedby={stillNeeded.length ? "still-needed" : undefined}
+          style={{ touchAction: "manipulation" }}
+          className={`btn-gradient pointer-events-auto relative z-30 touch-action-manipulation px-6 py-3 text-base sm:text-sm font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none cursor-pointer ${canContinue ? "btn-ready" : ""}`}
         >
           {isSyncing ? (
             <span>Saving...</span>
@@ -183,6 +208,17 @@ export default function OnboardingPage() {
           )}
         </button>
       </div>
+
+      {/* Step 3F: say exactly what's missing, so the button is never dull for no reason */}
+      {stillNeeded.length > 0 && !isBankDropdownOpen && (
+        <p
+          id="still-needed"
+          aria-live="polite"
+          className="mt-3 text-right text-xs leading-relaxed text-[#01C4FA]/80 light:text-[#233067]/75"
+        >
+          Still needed: {stillNeeded.join(", ")}
+        </p>
+      )}
     </div>
   );
 }

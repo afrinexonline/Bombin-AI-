@@ -73,6 +73,8 @@ interface OnboardingContextValue {
   goToStep: (step: number) => void;
   resetOnboarding: () => void;
   isStepValid: (step: number) => boolean;
+  /** Plain-word names of the required fields still empty on this step (Step 3F). */
+  missingFields: (step: number) => string[];
   syncToSupabase: (stepNum: number) => Promise<void>;
   isBankDropdownOpen: boolean;
   setBankDropdownOpen: (open: boolean) => void;
@@ -88,6 +90,7 @@ const OnboardingContext = createContext<OnboardingContextValue>({
   goToStep: () => {},
   resetOnboarding: () => {},
   isStepValid: () => false,
+  missingFields: () => [],
   syncToSupabase: async () => {},
   isBankDropdownOpen: false,
   setBankDropdownOpen: () => {},
@@ -245,7 +248,13 @@ export function BaseOnboardingProvider({ children }: { children: ReactNode }) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session?.user) {
           setSessionUser(session.user);
-          hydrateFromSupabase(session.user.id).finally(() => setIsHydrating(false));
+          // Step 3F: never wait for Supabase inside its own login listener. Doing so can
+          // lock up every later Supabase call (a known Supabase pitfall, seen most on
+          // iPhones and home-screen apps). Run it just after the listener instead.
+          const id = session.user.id;
+          setTimeout(() => {
+            hydrateFromSupabase(id).finally(() => setIsHydrating(false));
+          }, 0);
         } else if (event === "SIGNED_OUT") {
           console.warn("Auth state changed to unauthenticated. Locking onboarding to Step 1.");
           setSessionUser(null);
@@ -359,31 +368,41 @@ export function BaseOnboardingProvider({ children }: { children: ReactNode }) {
     setData((prev) => ({ ...prev, currentStep: Math.max(1, Math.min(step, 4)) }));
   }, []);
 
-  const isStepValid = useCallback((step: number): boolean => {
+  // Step 3F: one list of what is still needed. The button and the "Still needed" hint
+  // both use it, so they can never disagree.
+  const missingFields = useCallback((step: number): string[] => {
+    const missing: string[] = [];
+    const has = (v?: string) => !!v?.trim();
     switch (step) {
-      case 1: {
-        const hasName = !!(data.firstName?.trim() && data.lastName?.trim());
-        const hasBusiness = !!data.businessName?.trim();
-        const hasIndustry = data.industryType === "Other" ? !!data.customIndustry?.trim() : !!data.industryType;
-        const hasEmail = !!data.email?.trim() && data.email.includes("@");
-        const hasPhone = !!data.phone?.trim();
-        const hasCity = !!data.city?.trim();
-        return hasName && hasBusiness && hasIndustry && hasEmail && hasPhone && hasCity;
-      }
+      case 1:
+        if (!has(data.firstName)) missing.push("First name");
+        if (!has(data.lastName)) missing.push("Last name");
+        if (!has(data.businessName)) missing.push("Business name");
+        if (!has(data.email) || !data.email.includes("@")) missing.push("Business email");
+        if (!has(data.phone)) missing.push("Phone number");
+        if (!has(data.industryType)) missing.push("Industry type");
+        else if (data.industryType === "Other" && !has(data.customIndustry)) missing.push("Your industry");
+        if (!has(data.city)) missing.push("Location");
+        break;
       case 2:
-        return !!data.tonePreference && (data.intentSelections?.length > 0);
-      case 3: {
-        const hasAccountName = !!data.accountName?.trim();
-        const hasAccountNumber = !!data.accountNumber?.trim() && data.accountNumber.length === 10;
-        const hasBank = data.bankName === "Other Bank" ? !!data.customBank?.trim() : !!data.bankName;
-        return hasAccountName && hasAccountNumber && hasBank;
-      }
+        if (!data.tonePreference) missing.push("A tone");
+        if (!(data.intentSelections?.length > 0)) missing.push("At least one goal");
+        break;
+      case 3:
+        if (!has(data.accountName)) missing.push("Account name");
+        if (!has(data.accountNumber) || data.accountNumber.length !== 10) missing.push("10-digit account number");
+        if (!has(data.bankName)) missing.push("Bank");
+        else if (data.bankName === "Other Bank" && !has(data.customBank)) missing.push("Your bank's name");
+        break;
       case 4:
-        return true; // WhatsApp step is always passable
+        break; // WhatsApp step is always passable
       default:
-        return false;
+        missing.push("Unknown step");
     }
+    return missing;
   }, [data]);
+
+  const isStepValid = useCallback((step: number): boolean => missingFields(step).length === 0, [missingFields]);
 
   return (
     <OnboardingContext.Provider
@@ -396,6 +415,7 @@ export function BaseOnboardingProvider({ children }: { children: ReactNode }) {
         goToStep,
         resetOnboarding,
         isStepValid,
+        missingFields,
         syncToSupabase,
         isBankDropdownOpen,
         setBankDropdownOpen,

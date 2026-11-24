@@ -25,7 +25,7 @@ const PAYMENT_METHODS = [
   { value: "payment_link", label: "Payment Link" }
 ];
 
-const LABEL_CLASSES = "absolute left-4 top-3.5 text-sm transition-all duration-200 transform pointer-events-none origin-left text-[var(--text-muted)] peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-blue-400 peer-focus:drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-[-webkit-autofill]:-translate-y-4 peer-[-webkit-autofill]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:scale-75";
+const LABEL_CLASSES = "absolute left-4 top-3.5 text-sm transition-all duration-200 transform pointer-events-none origin-left text-[var(--text-muted)] peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-[#01C4FA] peer-focus:drop-shadow-[0_0_8px_rgba(1,196,250,0.6)] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-[-webkit-autofill]:-translate-y-4 peer-[-webkit-autofill]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:scale-75";
 
 export default function StepPayoutConfig() {
   const { data, updateField, isBankDropdownOpen: isBankOpen, setBankDropdownOpen: setIsBankOpen } = useOnboarding();
@@ -100,6 +100,9 @@ export default function StepPayoutConfig() {
           type="text"
           className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
           placeholder=" "
+          name="accountName"
+          data-field="accountName"
+          autoComplete="name"
           value={data.accountName || ""}
           onChange={(e) => updateField("accountName", e.target.value)}
         />
@@ -113,7 +116,10 @@ export default function StepPayoutConfig() {
             type="tel"
             className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
             placeholder=" "
-            maxLength={10}
+            name="accountNumber"
+            data-field="accountNumber"
+            inputMode="numeric"
+            autoComplete="off"
             value={data.accountNumber || ""}
             onChange={handleAccountChange}
           />
@@ -146,12 +152,12 @@ export default function StepPayoutConfig() {
         </div>
 
         {isBankOpen && (
-          <div className="absolute left-0 w-full z-[200] mt-2 rounded-xl bg-[#0b1230]/[0.97] backdrop-blur-xl border border-[#01C4FA]/30 shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_20px_rgba(1,196,250,0.15)] overflow-hidden animate-fade-in light:bg-white/[0.98] light:border-[#233067]/20 light:shadow-[0_12px_40px_rgba(35,48,103,0.2)]">
+          <div className="absolute left-0 w-full z-[200] mt-2 rounded-xl bg-gradient-to-b from-[#1b2856]/[0.86] via-[#233067]/[0.82] to-[#0d4f73]/[0.8] backdrop-blur-2xl backdrop-saturate-150 border border-[#01C4FA]/40 shadow-[0_12px_40px_rgba(0,0,0,0.45),0_0_24px_rgba(1,196,250,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden animate-fade-in light:from-white/[0.88] light:via-white/[0.85] light:to-[#e3f7fe]/[0.85] light:border-[#01C4FA]/45 light:shadow-[0_12px_40px_rgba(35,48,103,0.18),0_0_20px_rgba(1,196,250,0.18)]">
             <div className="p-2 border-b border-white/5 light:border-[#233067]/10">
               <input 
                 type="text" 
                 placeholder="Search banks..." 
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#01C4FA]/50 light:bg-[#233067]/[0.04] light:border-[#233067]/15 light:text-[#233067] light:placeholder-[#233067]/40"
+                className="w-full bg-black/25 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#01C4FA]/50 light:bg-white/70 light:border-[#233067]/15 light:text-[#233067] light:placeholder-[#233067]/40"
                 value={bankSearch}
                 onChange={(e) => setBankSearch(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -159,12 +165,12 @@ export default function StepPayoutConfig() {
             </div>
             <div className="max-h-52 overflow-y-auto overscroll-contain">
               {filteredBanks.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 text-center">No banks found.</div>
+                <div className="px-4 py-3 text-sm text-white/70 text-center light:text-[#233067]/70">No banks found.</div>
               ) : (
                 filteredBanks.map((bank, index) => (
                   <div
                     key={`${bank}-${index}`}
-                    className="px-4 py-2.5 text-sm text-slate-100 cursor-pointer hover:bg-[#01C4FA]/15 transition-colors light:text-[#233067]"
+                    className="px-4 py-2.5 text-sm font-medium text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)] cursor-pointer hover:bg-[#01C4FA]/20 transition-colors light:text-[#233067] light:[text-shadow:0_1px_4px_rgba(255,255,255,0.9)]"
                     onClick={() => {
                       updateField("bankName", bank);
                       setIsBankOpen(false);
@@ -187,6 +193,8 @@ export default function StepPayoutConfig() {
               required={data.bankName === "Other Bank"}
               className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
               placeholder=" "
+              name="customBank"
+              data-field="customBank"
               value={data.customBank || ""}
               onChange={(e) => updateField("customBank", e.target.value)}
             />

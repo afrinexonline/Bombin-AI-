@@ -19,7 +19,7 @@ const INDUSTRIES = [
   "Other",
 ];
 
-const LABEL_CLASSES = "absolute left-4 top-3.5 text-sm transition-all duration-200 transform pointer-events-none origin-left text-[var(--text-muted)] peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-blue-400 peer-focus:drop-shadow-[0_0_8px_rgba(59,130,246,0.8)] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-[-webkit-autofill]:-translate-y-4 peer-[-webkit-autofill]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:scale-75";
+const LABEL_CLASSES = "absolute left-4 top-3.5 text-sm transition-all duration-200 transform pointer-events-none origin-left text-[var(--text-muted)] peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-[#01C4FA] peer-focus:drop-shadow-[0_0_8px_rgba(1,196,250,0.6)] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-[-webkit-autofill]:-translate-y-4 peer-[-webkit-autofill]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:scale-75";
 
 export default function StepStoreConfig() {
   const { data, updateField } = useOnboarding();
@@ -61,6 +61,9 @@ export default function StepStoreConfig() {
             required
             className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
             placeholder=" "
+            name="firstName"
+            data-field="firstName"
+            autoComplete="given-name"
             value={data.firstName || ""}
             onChange={(e) => updateField("firstName", e.target.value)}
           />
@@ -72,6 +75,9 @@ export default function StepStoreConfig() {
             required
             className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
             placeholder=" "
+            name="lastName"
+            data-field="lastName"
+            autoComplete="family-name"
             value={data.lastName || ""}
             onChange={(e) => updateField("lastName", e.target.value)}
           />
@@ -86,6 +92,9 @@ export default function StepStoreConfig() {
           required
           className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
           placeholder=" "
+          name="businessName"
+          data-field="businessName"
+          autoComplete="organization"
           value={data.businessName || ""}
           onChange={(e) => updateField("businessName", e.target.value)}
         />
@@ -100,6 +109,10 @@ export default function StepStoreConfig() {
             required
             className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
             placeholder=" "
+            name="email"
+            data-field="email"
+            autoComplete="email"
+            inputMode="email"
             value={data.email || ""}
             onChange={(e) => updateField("email", e.target.value)}
           />
@@ -111,6 +124,10 @@ export default function StepStoreConfig() {
             required
             className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
             placeholder=" "
+            name="phone"
+            data-field="phone"
+            autoComplete="tel"
+            inputMode="tel"
             value={data.phone || ""}
             onChange={(e) => updateField("phone", e.target.value)}
           />
@@ -128,13 +145,14 @@ export default function StepStoreConfig() {
             Industry Type
           </label>
           <select
+            name="industryType"
+            data-field="industryType"
+            aria-label="Industry type"
             className="glass-select w-full px-4 py-3 text-sm"
             value={data.industryType || ""}
             onChange={(e) => updateField("industryType", e.target.value)}
           >
-            <option value="" disabled>
-              Select your industry
-            </option>
+            <option value="">Select your industry</option>
             {INDUSTRIES.map((industry) => (
               <option key={industry} value={industry}>
                 {industry}
@@ -151,6 +169,8 @@ export default function StepStoreConfig() {
               required
               className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
               placeholder=" "
+              name="customIndustry"
+              data-field="customIndustry"
               value={data.customIndustry || ""}
               onChange={(e) => updateField("customIndustry", e.target.value)}
             />
@@ -165,6 +185,10 @@ export default function StepStoreConfig() {
           type="url"
           className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
           placeholder=" "
+          name="website"
+          data-field="website"
+          autoComplete="url"
+          inputMode="url"
           value={data.website || ""}
           onChange={(e) => updateField("website", e.target.value)}
         />
@@ -178,6 +202,9 @@ export default function StepStoreConfig() {
           required
           className="peer glass-input w-full px-4 pt-[18px] pb-[8px] text-sm"
           placeholder=" "
+          name="city"
+          data-field="city"
+          autoComplete="address-level2"
           value={data.city || ""}
           onChange={(e) => updateField("city", e.target.value)}
         />
