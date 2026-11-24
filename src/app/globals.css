@@ -117,8 +117,40 @@ body {
   background: var(--bg-body);
   color: var(--text-body);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
   transition: background 0.4s ease, color 0.4s ease;
+}
+
+/*
+ * Step 3E: no sideways scrolling. Every element is sized to fit the screen; this is
+ * only the final safety net. "clip" (unlike "hidden") doesn't turn the page into its
+ * own scroll box, so sticky and fixed bars and pop-ups keep working.
+ */
+html {
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* Long words, emails and links break onto the next line instead of widening the page. */
+body {
+  overflow-wrap: break-word;
+}
+
+/*
+ * Step 3E: iPhones zoom in by themselves when a text box uses text smaller than 16px.
+ * On phones and touch screens every text box, text area and dropdown uses 16px.
+ * Computers keep the smaller, denser text.
+ */
+@media (max-width: 767px), (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 /* ── Ambient Background Effects ──────────────────── */

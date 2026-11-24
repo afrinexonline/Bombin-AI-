@@ -12,7 +12,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import LogOutButton from "./auth/LogOutButton";
 
 const navItems = [
   { icon: Home, label: "Home", id: "home", href: "/dashboard" },
@@ -41,15 +40,15 @@ export default function Sidebar() {
       <Link
         href="/dashboard"
         prefetch={true}
-        className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer mb-6 flex items-center justify-center w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 backdrop-blur-md hover:bg-white/[0.1] hover:scale-105 transition-all overflow-hidden"
+        aria-label="Bombin AI home"
+        className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer mb-6 flex items-center justify-center w-12 h-12 hover:scale-105 transition-transform"
       >
         <Image
-          src="/bombinai-logo.png"
-          alt="BOMBIN AI Logo"
-          width={40}
-          height={40}
-          className="h-8 w-auto object-contain"
-          quality={100}
+          src="/logo-mark.png"
+          alt="Bombin AI"
+          width={56}
+          height={56}
+          className="h-14 w-14 max-w-none object-contain drop-shadow-[0_0_12px_rgba(1,196,250,0.35)]"
           priority
         />
       </Link>
@@ -86,11 +85,10 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Log out + avatar */}
+      {/* Avatar (log out lives on the Profile page) */}
       <div className="mt-auto flex flex-col items-center gap-3">
-        <LogOutButton variant="sidebar" />
         <div
-          className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan/30 to-purple-light/30 flex items-center justify-center text-xs font-semibold"
+          className="w-9 h-9 rounded-full bg-gradient-to-br from-[#01C4FA]/30 to-[#233067]/60 flex items-center justify-center text-xs font-semibold"
           style={{ border: "1px solid var(--border-card)", color: "var(--text-secondary)" }}
         >
           B

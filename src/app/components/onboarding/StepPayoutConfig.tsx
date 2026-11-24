@@ -146,12 +146,12 @@ export default function StepPayoutConfig() {
         </div>
 
         {isBankOpen && (
-          <div className="absolute left-0 w-full z-[200] mt-2 rounded-xl bg-blue-950/60 backdrop-blur-xl border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.15)] overflow-hidden animate-fade-in">
-            <div className="p-2 border-b border-white/5">
+          <div className="absolute left-0 w-full z-[200] mt-2 rounded-xl bg-[#0b1230]/[0.97] backdrop-blur-xl border border-[#01C4FA]/30 shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_20px_rgba(1,196,250,0.15)] overflow-hidden animate-fade-in light:bg-white/[0.98] light:border-[#233067]/20 light:shadow-[0_12px_40px_rgba(35,48,103,0.2)]">
+            <div className="p-2 border-b border-white/5 light:border-[#233067]/10">
               <input 
                 type="text" 
                 placeholder="Search banks..." 
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#01C4FA]/50 light:bg-[#233067]/[0.04] light:border-[#233067]/15 light:text-[#233067] light:placeholder-[#233067]/40"
                 value={bankSearch}
                 onChange={(e) => setBankSearch(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -164,7 +164,7 @@ export default function StepPayoutConfig() {
                 filteredBanks.map((bank, index) => (
                   <div
                     key={`${bank}-${index}`}
-                    className="px-4 py-2.5 text-sm text-slate-100 cursor-pointer hover:bg-blue-500/20 transition-colors"
+                    className="px-4 py-2.5 text-sm text-slate-100 cursor-pointer hover:bg-[#01C4FA]/15 transition-colors light:text-[#233067]"
                     onClick={() => {
                       updateField("bankName", bank);
                       setIsBankOpen(false);

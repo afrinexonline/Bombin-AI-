@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import WhatsAppModal from "./WhatsAppModal";
 import Image from "next/image";
-import LogOutButton from "./auth/LogOutButton";
 
 export default function TopBar() {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
@@ -17,13 +16,11 @@ export default function TopBar() {
         {/* Left — Title & Logo */}
         <div className="flex items-center gap-2.5 sm:gap-4">
           <Image
-            src="/bombinai-logo.png"
-            alt="BOMBIN AI Logo"
-            width={44}
-            height={44}
-            className="h-8 sm:h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
-            style={{ background: 'transparent', mixBlendMode: 'plus-lighter' }}
-            quality={100}
+            src="/logo-mark.png"
+            alt="Bombin AI"
+            width={56}
+            height={56}
+            className="h-11 w-11 sm:h-14 sm:w-14 -mx-1.5 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(1,196,250,0.3)] lg:hidden"
             priority
           />
           <div>
@@ -73,11 +70,6 @@ export default function TopBar() {
             <MessageCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             <span>Connect WhatsApp</span>
           </button>
-
-          {/* Log out on phones and tablets (the desktop sidebar has its own) */}
-          <div className="lg:hidden">
-            <LogOutButton variant="topbar" />
-          </div>
         </div>
       </header>
 

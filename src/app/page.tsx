@@ -391,16 +391,15 @@ export default function LandingPage() {
           {/* Left: Logo + Brand */}
           <div className="flex items-center gap-2.5 sm:gap-4">
             <Image
-              src="/bombinai-logo.png"
-              alt="Bombin AI Logo"
-              width={44}
-              height={44}
-              className="h-7 sm:h-10 w-auto object-contain mix-blend-screen contrast-125 drop-shadow-[0_0_12px_rgba(0,201,255,0.25)]"
-              style={{ background: 'transparent' }}
+              src="/logo-mark.png"
+              alt="Bombin AI"
+              width={56}
+              height={56}
+              className="h-11 w-11 sm:h-14 sm:w-14 -mx-1.5 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(1,196,250,0.35)]"
               priority
             />
             <div>
-              <h1 className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(0,201,255,0.3)]">
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#01C4FA] via-white to-[#01C4FA] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent drop-shadow-[0_0_16px_rgba(1,196,250,0.3)]">
                 Bombin AI
               </h1>
               <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">AI Sales Closer</p>
@@ -1122,7 +1121,7 @@ export default function LandingPage() {
       <footer className="relative z-10 py-12 border-t border-white/[0.06] bg-transparent backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-white/30 text-sm">
           <div className="flex items-center gap-2">
-            <Image src="/bombinai-logo.png" alt="Bombin AI Logo" width={20} height={20} className="mix-blend-screen contrast-125 opacity-40" />
+            <Image src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8 -mx-1 object-contain opacity-80" />
             <span className="font-semibold text-white/40">Bombin AI</span>
           </div>
           <p>© 2026 Bombin AI. All rights reserved. Built for the modern Nigerian hustle.</p>

@@ -2,6 +2,7 @@
 
 import { User, Building2, MapPin, Mail, CreditCard, Landmark, Mic, Shield, Edit3 } from "lucide-react";
 import { useOnboarding } from "../../context/OnboardingContext";
+import LogOutButton from "../../components/auth/LogOutButton";
 
 const toneLabels: Record<string, string> = {
   corporate: "🏢 Professional Corporate",
@@ -225,6 +226,12 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Log out (Step 3E): asks first, then logs out safely */}
+      {/* Extra space on phones so the AI assistant button never covers it */}
+      <div className="pt-2 pb-20 lg:pb-4 animate-fade-up">
+        <LogOutButton variant="profile" />
       </div>
     </div>
   );

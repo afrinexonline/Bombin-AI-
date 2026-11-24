@@ -16,13 +16,13 @@ export default function OnboardingLayout({
       {/* Ambient Background */}
       <div className="bg-ambient pointer-events-none z-0" />
 
-      {/* Log out (Step 3D): always reachable, even halfway through setup */}
-      <div className="absolute top-4 right-4 z-30">
-        <LogOutButton variant="topbar" />
+      {/* Log out (Step 3E): small link in its own row, asks first. Always reachable during setup. */}
+      <div className="relative z-30 max-w-2xl mx-auto flex justify-end px-3 pt-3">
+        <LogOutButton variant="link" />
       </div>
 
       {/* Centered Container */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 pt-2 pb-8 min-h-[calc(100vh-3.25rem)] flex flex-col items-center justify-center">
         <OnboardingGuard>{children}</OnboardingGuard>
       </div>
     </div>

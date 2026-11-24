@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "./components/ThemeProvider";
@@ -19,7 +19,32 @@ export const metadata: Metadata = {
   title: "BOMBIN AI — Turn Every DM into Cash",
   description:
     "AI-powered WhatsApp sales automation. Close deals faster with intelligent responses, real-time momentum tracking, and seamless payment routing.",
+  appleWebApp: { title: "Bombin AI" },
 };
+
+/* Normal phone width, normal starting size. People can always pinch-zoom by hand. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#233067",
+};
+
+/*
+ * Step 3E: iPhones and iPads zoom in by themselves when someone taps a text box.
+ * All our boxes already use 16px text on phones (which stops it), and this is the
+ * backup for iOS ONLY: there "maximum-scale=1" stops the automatic zoom but iOS still
+ * lets people pinch-zoom by hand. Android and computers are left alone, because there
+ * the same setting would block hand zoom. Runs in <head>, before anything is drawn.
+ */
+const IOS_NO_AUTO_ZOOM = `(function(){try{
+var n=navigator,ios=/iPad|iPhone|iPod/.test(n.userAgent)||(n.platform==="MacIntel"&&n.maxTouchPoints>1);
+if(!ios)return;
+var c="width=device-width, initial-scale=1, maximum-scale=1";
+var m=document.querySelector('meta[name="viewport"]');
+if(m){m.setAttribute("content",c);return;}
+m=document.createElement("meta");m.name="viewport";m.content=c;document.head.appendChild(m);
+new MutationObserver(function(){document.querySelectorAll('meta[name="viewport"]').forEach(function(x){if(x.content!==c)x.content=c;});}).observe(document.head,{childList:true});
+}catch(e){}})();`;
 
 /*
  * Runs before the page draws anything (Step 3C flash fix).
@@ -66,6 +91,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: EMAIL_LINK_FORWARD }} />
+        <script dangerouslySetInnerHTML={{ __html: IOS_NO_AUTO_ZOOM }} />
       </head>
       <body className="min-h-full">
         <ThemeProvider>
