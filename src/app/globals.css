@@ -1395,3 +1395,24 @@ html[data-theme="light"] .hero-gradient-text {
 .faq-drawer-inner {
   overflow: hidden;
 }
+
+/* ── Step 4B: automation flows — light pulse along the connecting lines ── */
+@keyframes flow-pulse-x {
+  0% { left: 0; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+@keyframes flow-pulse-y {
+  0% { top: 0; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes flow-think {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+  40% { transform: translateY(-3px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-anim { animation: none !important; }
+}

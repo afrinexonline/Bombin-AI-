@@ -4,9 +4,11 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import Link from "next/link";
 import { Bot, Camera, ChevronDown, Globe, Megaphone, Menu, MessageCircle, Music, X, type LucideIcon } from "lucide-react";
+import WaitlistDialog from "./WaitlistDialog";
+import type { WaitlistChoice } from "../../lib/waitlist";
 
 /*
- * Services menu (Step 4A).
+ * Services menu (Step 4A; Step 4B: WhatsApp page link, Instagram/TikTok open the waitlist).
  * - <ServicesDropdown>: "Services" button + glass panel for computers (md and up).
  * - <ServicesMobileButton>: menu icon + glass sheet for phones (below md).
  * Both close on outside tap and Escape, and work with the keyboard (arrows, Enter, Escape).
@@ -19,12 +21,14 @@ export interface ServiceLink {
   icon: LucideIcon;
   href?: string;
   soon?: boolean;
+  /** Coming-soon items open the waitlist pop-up with this choice. */
+  waitlist?: WaitlistChoice;
 }
 
 export const SERVICE_LINKS: ServiceLink[] = [
-  { label: "WhatsApp AI Assistant", description: "Your 24/7 AI salesperson on WhatsApp.", icon: MessageCircle, href: "/#whatsapp-ai" },
-  { label: "Instagram DMs & Comments", description: "AI replies to DMs and comments.", icon: Camera, soon: true },
-  { label: "TikTok Assistant", description: "Turn TikTok interest into sales.", icon: Music, soon: true },
+  { label: "WhatsApp AI Assistant", description: "Your 24/7 AI salesperson on WhatsApp.", icon: MessageCircle, href: "/services/whatsapp-ai-assistant" },
+  { label: "Instagram DMs & Comments", description: "AI replies to DMs and comments.", icon: Camera, soon: true, waitlist: "instagram" },
+  { label: "TikTok Assistant", description: "Turn TikTok interest into sales.", icon: Music, soon: true, waitlist: "tiktok" },
   { label: "Website Development", description: "Fast, beautiful websites that sell.", icon: Globe, href: "/services/website-development" },
   { label: "AI Marketing", description: "Content, SEO and ads that bring buyers.", icon: Megaphone, href: "/services/ai-marketing" },
   { label: "AI Automation", description: "AI agents that do the busywork.", icon: Bot, href: "/services/ai-automation" },
@@ -35,7 +39,7 @@ type Tone = "dark" | "auto";
 const TOUCH = "pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer";
 
 /** One row in the panel or sheet. */
-function ServiceRow({ s, tone, onPick, big }: { s: ServiceLink; tone: Tone; onPick: () => void; big?: boolean }) {
+function ServiceRow({ s, tone, onPick, onWaitlist, big }: { s: ServiceLink; tone: Tone; onPick: () => void; onWaitlist: (c: WaitlistChoice) => void; big?: boolean }) {
   const Icon = s.icon;
   const auto = tone === "auto";
   const inner = (
@@ -60,20 +64,30 @@ function ServiceRow({ s, tone, onPick, big }: { s: ServiceLink; tone: Tone; onPi
     </>
   );
   const rowClass = `flex w-full items-center gap-3 rounded-xl px-3 ${big ? "py-3" : "py-2.5"} text-left outline-none transition-colors`;
-  if (s.soon || !s.href) {
+  const hover = `${TOUCH} hover:bg-[#01C4FA]/10 focus-visible:bg-[#01C4FA]/12 focus-visible:ring-2 focus-visible:ring-[#01C4FA]/60 ${auto ? "light:hover:bg-[#233067]/[0.05]" : ""}`;
+  if (s.waitlist) {
+    const choice = s.waitlist;
     return (
-      <div role="menuitem" aria-disabled="true" tabIndex={-1} className={`${rowClass} cursor-default opacity-70`}>
+      <button
+        type="button"
+        role="menuitem"
+        aria-haspopup="dialog"
+        onClick={() => onWaitlist(choice)}
+        style={{ touchAction: "manipulation" }}
+        className={`${rowClass} ${hover}`}
+      >
         {inner}
-      </div>
+      </button>
     );
   }
+  if (!s.href) return null;
   return (
     <Link
       href={s.href}
       role="menuitem"
       onClick={onPick}
       style={{ touchAction: "manipulation" }}
-      className={`${rowClass} ${TOUCH} hover:bg-[#01C4FA]/10 focus-visible:bg-[#01C4FA]/12 focus-visible:ring-2 focus-visible:ring-[#01C4FA]/60 ${auto ? "light:hover:bg-[#233067]/[0.05]" : ""}`}
+      className={`${rowClass} ${hover}`}
     >
       {inner}
     </Link>
@@ -84,7 +98,7 @@ function ServiceRow({ s, tone, onPick, big }: { s: ServiceLink; tone: Tone; onPi
 function useMenuKeys(container: React.RefObject<HTMLElement | null>, close: () => void) {
   return useCallback(
     (e: React.KeyboardEvent) => {
-      const items = Array.from(container.current?.querySelectorAll<HTMLElement>('a[role="menuitem"]') ?? []);
+      const items = Array.from(container.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
       const i = items.indexOf(document.activeElement as HTMLElement);
       if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length]?.focus(); }
       else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); }
@@ -98,6 +112,7 @@ function useMenuKeys(container: React.RefObject<HTMLElement | null>, close: () =
 
 export function ServicesDropdown({ tone = "auto" }: { tone?: Tone }) {
   const [open, setOpen] = useState(false);
+  const [waitlist, setWaitlist] = useState<WaitlistChoice | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -122,7 +137,7 @@ export function ServicesDropdown({ tone = "auto" }: { tone?: Tone }) {
   // Keyboard opening: show the panel straight away, then move focus to the first service.
   const openAndFocus = () => {
     flushSync(() => setOpen(true));
-    panel.current?.querySelector<HTMLElement>('a[role="menuitem"]')?.focus();
+    panel.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
   };
 
   return (
@@ -159,16 +174,18 @@ export function ServicesDropdown({ tone = "auto" }: { tone?: Tone }) {
         <div className="pointer-events-none absolute -top-10 left-1/2 z-0 h-24 w-48 -translate-x-1/2 rounded-full bg-[#01C4FA]/15 blur-3xl" aria-hidden="true" />
         <div className="relative z-10 flex flex-col gap-0.5">
           {SERVICE_LINKS.map((s) => (
-            <ServiceRow key={s.label} s={s} tone={tone} onPick={() => setOpen(false)} />
+            <ServiceRow key={s.label} s={s} tone={tone} onPick={() => setOpen(false)} onWaitlist={(c) => { setOpen(false); setWaitlist(c); }} />
           ))}
         </div>
       </div>
+      {waitlist && <WaitlistDialog initial={waitlist} tone={tone} onClose={() => { setWaitlist(null); button.current?.focus(); }} />}
     </div>
   );
 }
 
 export function ServicesMobileButton({ tone = "auto", accountLinks = false }: { tone?: Tone; accountLinks?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [waitlist, setWaitlist] = useState<WaitlistChoice | null>(null);
   const [shown, setShown] = useState(false); // for the slide-in animation
   const sheet = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -244,7 +261,7 @@ export function ServicesMobileButton({ tone = "auto", accountLinks = false }: { 
                 </div>
                 <div role="menu" aria-label="Services" className="flex flex-col gap-0.5">
                   {SERVICE_LINKS.map((s) => (
-                    <ServiceRow key={s.label} s={s} tone={tone} onPick={() => { setShown(false); setOpen(false); }} big />
+                    <ServiceRow key={s.label} s={s} tone={tone} onPick={() => { setShown(false); setOpen(false); }} onWaitlist={(c) => { setShown(false); setOpen(false); setWaitlist(c); }} big />
                   ))}
                 </div>
                 {accountLinks && (
@@ -264,6 +281,7 @@ export function ServicesMobileButton({ tone = "auto", accountLinks = false }: { 
           </div>,
           document.body,
         )}
+      {waitlist && <WaitlistDialog initial={waitlist} tone={tone} onClose={() => setWaitlist(null)} />}
     </>
   );
 }

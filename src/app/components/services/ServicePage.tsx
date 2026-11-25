@@ -6,6 +6,9 @@ import SiteHeader from "../site/SiteHeader";
 import CalculatorCard from "./CalculatorCard";
 import AnimatedPrice from "./AnimatedPrice";
 import ReviewOrder from "./ReviewOrder";
+import WebsiteShowcase from "./showcase/WebsiteShowcase";
+import MarketingShowcase from "./showcase/MarketingShowcase";
+import AutomationShowcase from "./showcase/AutomationShowcase";
 import { DEFAULT_CHOICES, SERVICES, WEBSITE, cleanChoices, naira, quote, visibleCards, type Choices, type ServiceId } from "../../lib/pricing";
 import { interestLink } from "../../lib/orders";
 
@@ -16,6 +19,8 @@ import { interestLink } from "../../lib/orders";
  */
 
 const TOUCH = "pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer";
+
+const reduceMotion = () => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export default function ServicePage({ service, headline, subheadline }: { service: ServiceId; headline: string; subheadline: string }) {
   const svc = SERVICES[service];
@@ -117,8 +122,19 @@ export default function ServicePage({ service, headline, subheadline }: { servic
           </div>
         </section>
 
-        {/* ── Showcase: a later step adds examples of our work here. ── */}
-        <div id="showcase" />
+        {/* ── Showcase (Step 4B) ── */}
+        <div id="showcase">
+          {service === "website" && (
+            <WebsiteShowcase
+              onPickType={(typeId) => {
+                setChoice("type", typeId);
+                requestAnimationFrame(() => document.getElementById("card-type")?.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" }));
+              }}
+            />
+          )}
+          {service === "marketing" && <MarketingShowcase />}
+          {service === "automation" && <AutomationShowcase />}
+        </div>
 
         {/* ── Calculator ── */}
         <section id="calculator" aria-labelledby="calc-title" className="mx-auto max-w-6xl scroll-mt-20 px-4 sm:px-6">
