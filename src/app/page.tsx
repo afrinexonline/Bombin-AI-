@@ -8,6 +8,7 @@ import { clearLocalLogin, clearLocalLoginIfAny, isEmailConfirmed, markEmailSent,
 import { AUTH_MSG, isOffline, mayHaveReachedServer, networkMessage, waitUntilOnline, withTimeout } from "./lib/authMessages";
 import { useNavTransition } from "./components/auth/NavTransition";
 import PasswordField from "./components/auth/PasswordField";
+import { ServicesDropdown, ServicesMobileButton } from "./components/site/ServicesMenu";
 import { isValidEmailFormat, normalizeEmail } from "./lib/emailChecks";
 import ResendEmailButton from "./components/auth/ResendEmailButton";
 import EmailField from "./components/auth/EmailField";
@@ -389,7 +390,7 @@ export default function LandingPage() {
       <header className="relative z-50 w-full border-b border-white/[0.07] bg-transparent backdrop-blur-xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2 px-4 sm:px-8 py-3 min-h-[4.5rem]">
           {/* Left: Logo + Brand */}
-          <div className="flex items-center gap-2.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Image
               src="/logo-mark.png"
               alt="Bombin AI"
@@ -406,22 +407,27 @@ export default function LandingPage() {
             </div>
           </div>
 
+          {/* Middle: Services menu (computers) */}
+          <ServicesDropdown tone="dark" />
+
           {/* Right: CTAs */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               onClick={() => setIsLoginModalOpen(true)}
               style={{ touchAction: "manipulation" }}
-              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20"
+              className="pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-2.5 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border border-white/10 bg-white/[0.04] backdrop-blur-md text-white rounded-xl transition-all hover:bg-white/[0.08] hover:border-white/20"
             >
               Log In
             </button>
             <button
               onClick={() => setIsSignUpModalOpen(true)}
               style={{ touchAction: "manipulation" }}
-              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3.5 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white hover:scale-[1.02] transition-all transform hover:-translate-y-[1px] shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white hover:scale-[1.02] transition-all transform hover:-translate-y-[1px] shadow-[0_0_15px_rgba(59,130,246,0.3)]"
             >
               Start Selling
             </button>
+            {/* Services menu (phones) */}
+            <ServicesMobileButton tone="dark" />
           </div>
         </div>
       </header>
@@ -569,7 +575,8 @@ export default function LandingPage() {
       </div>
 
       {/* ── HOW IT WORKS — Value Proposition Canvas ────── */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-white/[0.06]">
+      {/* id: the "WhatsApp AI Assistant" item in the Services menu jumps here (Step 4A). */}
+      <section id="whatsapp-ai" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-white/[0.06] scroll-mt-4">
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 animate-fade-up">
             Chat with over{" "}

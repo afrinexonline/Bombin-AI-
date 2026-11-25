@@ -135,6 +135,12 @@ html {
   }
 }
 
+/* Step 4A: keyboard focus ring in brand cyan (instead of the browser's default colour). */
+:focus-visible {
+  outline: 2px solid #01C4FA;
+  outline-offset: 2px;
+}
+
 /* Long words, emails and links break onto the next line instead of widening the page. */
 body {
   overflow-wrap: break-word;
