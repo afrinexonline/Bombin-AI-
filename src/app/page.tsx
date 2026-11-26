@@ -10,6 +10,7 @@ import { useNavTransition } from "./components/auth/NavTransition";
 import PasswordField from "./components/auth/PasswordField";
 import { ServicesDropdown, ServicesMobileButton } from "./components/site/ServicesMenu";
 import WhatsAppSimulator from "./components/site/WhatsAppSimulator";
+import HeroSlider from "./components/site/HeroSlider";
 import { isValidEmailFormat, normalizeEmail } from "./lib/emailChecks";
 import ResendEmailButton from "./components/auth/ResendEmailButton";
 import EmailField from "./components/auth/EmailField";
@@ -362,73 +363,24 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ── HERO SECTION [Node 1] ──────────────────────── */}
-      <div className="relative overflow-hidden bg-black">
-        {/* Localized Hero Aurora Blobs */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="bg-blue-600/40 mix-blend-screen blur-[90px] w-[600px] h-[400px] absolute top-[-5%] right-[-5%] rounded-full transform-gpu animate-pulse pointer-events-none z-0" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/30 blur-[100px] rounded-full animate-pulse transform-gpu pointer-events-none z-0" />
-        </div>
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      {/* ── HERO: six-slide slider (Step 4C) ─────────────── */}
+      <HeroSlider onSignUp={() => setIsSignUpModalOpen(true)} />
 
-        {/* Left: Copy */}
-        <div className="lg:col-span-7 flex flex-col items-start text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00C9FF]/25 bg-white/[0.04] text-[#00C9FF] backdrop-blur-xl text-xs font-semibold tracking-wider uppercase mb-6 animate-fade-up">
-            <Zap size={12} className="animate-pulse" />
-            Empowering Next-Gen Social Commerce
+      {/* ── LIVE DEMO: the WhatsApp chat simulator (moved out of the hero in Step 4C) ── */}
+      <section id="live-demo" aria-labelledby="live-demo-title" className="relative z-10 scroll-mt-4 overflow-hidden bg-black px-5 py-20 sm:px-8">
+        <div className="pointer-events-none absolute left-1/2 top-1/3 z-0 h-80 w-[70%] -translate-x-1/2 rounded-full bg-[#01C4FA]/[0.08] blur-3xl" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <div className="mb-10 text-center">
+            <h2 id="live-demo-title" className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Watch Bombin <span className="bg-gradient-to-r from-[#01C4FA] to-[#9BE9FF] bg-clip-text text-transparent">close a sale</span>
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-[15px] text-slate-400">An example chat in English and Pidgin, from &ldquo;How much?&rdquo; to &ldquo;How do I pay?&rdquo;</p>
           </div>
-
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.15] tracking-tight mb-6 animate-fade-up delay-1">
-            Turn Your WhatsApp DMs into{" "}
-            <span className="bg-gradient-to-r from-[#00C9FF] via-[#7B2FBE] to-[#00C9FF] bg-clip-text text-transparent bg-[size:200%] animate-gradient-shift filter drop-shadow-[0_0_30px_rgba(0,201,255,0.15)]">
-              Cash
-            </span>{" "}
-            While You{" "}
-            <span className="bg-gradient-to-r from-[#7B2FBE] via-[#00C9FF] to-[#7B2FBE] bg-clip-text text-transparent bg-[size:200%] animate-gradient-shift filter drop-shadow-[0_0_30px_rgba(123,47,190,0.15)]">
-              Sleep
-            </span>
-          </h2>
-
-          <p className="text-lg text-slate-400 leading-relaxed max-w-2xl mb-10 animate-fade-up delay-2">
-            The only AI closer with Cultural Intelligence. Master English, Pidgin, and local context to close deals 24/7 while you sleep.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-3 animate-fade-up delay-3">
-            <button
-              onClick={() => setIsSignUpModalOpen(true)}
-              style={{ touchAction: "manipulation" }}
-              className="btn-gradient pointer-events-auto relative z-30 touch-action-manipulation cursor-pointer px-8 py-4 text-base font-bold text-center text-white hover:scale-[1.02] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-            >
-              Connect WhatsApp <ArrowRight size={18} />
-            </button>
+          <div className="relative flex justify-center">
+            <WhatsAppSimulator />
           </div>
-          <p className="text-sm text-white/50 mb-12 animate-fade-up delay-3">Now in early access. Launching soon.</p>
-
-          {/* Social Proof */}
-          <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/[0.07] w-full animate-fade-up delay-4">
-            <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#00C9FF] filter drop-shadow-[0_0_8px_rgba(0,201,255,0.3)]">2</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">English &amp; Pidgin</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#7B2FBE] filter drop-shadow-[0_0_8px_rgba(123,47,190,0.3)]">24/7</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Replies 24/7</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 filter drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">₦</p>
-              <p className="text-xs text-white/40 mt-1 uppercase tracking-wider font-semibold">Built for Nigerian vendors</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: WhatsApp Simulator — strict 420px height lock */}
-        <div className="lg:col-span-5 relative w-full flex justify-center animate-fade-up delay-2 pointer-events-auto z-30">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#00C9FF]/[0.04] to-[#7B2FBE]/[0.04] rounded-3xl filter blur-2xl pointer-events-none z-0" />
-
-          <WhatsAppSimulator />
         </div>
       </section>
-      </div> {/* end Hero wrapper */}
 
       {/* ── SOCIAL PROOF BAR ──────────────────────────── */}
       <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-3 py-5 border-y border-blue-500/10 bg-white/[0.02] px-6 text-center">
@@ -553,7 +505,7 @@ export default function LandingPage() {
               <div className="relative z-10 w-full">
                 <span className="inline-block mb-3 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 bg-cyan-400/10 border border-cyan-400/30 px-2 py-0.5 rounded-full">Coming soon</span>
                 <h3 className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-bold text-xl mb-3">Instant QR Pairing</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">No complex business verification or corporate registration documents required. Scan a QR code inside your dashboard and go live in 5 seconds flat.</p>
+                <p className="text-slate-400 text-sm leading-relaxed">No complex business verification or corporate registration documents required. Sign up for early access and we'll help you set up.</p>
               </div>
             </div>
             {/* Card 2: True Media Context */}

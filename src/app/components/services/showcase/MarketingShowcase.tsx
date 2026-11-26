@@ -11,8 +11,10 @@ import { Carousel, PhoneFrame, Scaled, ShowcaseHeading } from "./Frames";
  * Brands are invented. No like/view counts or results are shown.
  */
 
-const W = 300;
-const H = 620;
+export const PREVIEW_W = 300;
+const W = PREVIEW_W;
+export const PREVIEW_H = 620;
+const H = PREVIEW_H;
 const sans = "Inter, system-ui, sans-serif";
 
 const Avatar = ({ from, to, letter }: { from: string; to: string; letter: string }) => (
@@ -190,7 +192,7 @@ const googleResult = () => (
   </Screen>
 );
 
-const ITEMS: { label: string; tag: string; render: () => ReactNode }[] = [
+export const MARKETING_PREVIEWS: { label: string; tag: string; render: () => ReactNode }[] = [
   { label: "Instagram post", tag: "Fashion", render: instaPost },
   { label: "Reel cover", tag: "Food", render: reelCover },
   { label: "TikTok video", tag: "Beauty", render: tiktokCover },
@@ -199,7 +201,7 @@ const ITEMS: { label: string; tag: string; render: () => ReactNode }[] = [
   { label: "Google search (SEO)", tag: "Events", render: googleResult },
 ];
 
-function Phone({ item }: { item: (typeof ITEMS)[number] }) {
+function Phone({ item }: { item: (typeof MARKETING_PREVIEWS)[number] }) {
   return (
     <div className="mx-auto w-full max-w-[230px] lg:max-w-[260px]">
       <PhoneFrame>
@@ -221,12 +223,12 @@ export default function MarketingShowcase() {
         <ShowcaseHeading title="Content that stops the scroll" sub="Posts, reels, ads and search results, made with AI for your brand." />
       </div>
       <div className="relative z-10 lg:hidden">
-        <Carousel count={ITEMS.length} label="Marketing content">
-          {(i) => <Phone item={ITEMS[i]} />}
+        <Carousel count={MARKETING_PREVIEWS.length} label="Marketing content">
+          {(i) => <Phone item={MARKETING_PREVIEWS[i]} />}
         </Carousel>
       </div>
       <div className="relative z-10 hidden grid-cols-3 gap-x-8 gap-y-10 lg:grid xl:grid-cols-6 xl:gap-x-5">
-        {ITEMS.map((it) => <Phone key={it.label} item={it} />)}
+        {MARKETING_PREVIEWS.map((it) => <Phone key={it.label} item={it} />)}
       </div>
       <div className="relative z-10 mt-8 flex justify-center">
         <a
